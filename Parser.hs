@@ -11,8 +11,10 @@ lexer :: P.TokenParser ()
 lexer = P.makeTokenParser whileDef
 
 whileDef = (emptyDef
-              {P.reservedOpNames = ["*", "+", "-", "!", "&", "=", "<="],
-               P.reservedNames = ["true", "false"],
+              {P.reservedOpNames = ["*", "+", "-", "!", "&", "=", "<=", ":=", 
+                                    ";"],
+               P.reservedNames = ["true", "false", "skip", "if", "then", 
+                                  "else", "while", "do"],
                P.identStart = letter
               })
 
@@ -22,6 +24,13 @@ reserved = P.reserved lexer
 integer = P.integer lexer
 
 -- parser 
+
+data Statement = Skip
+               | Assign String ArithmeticExp
+               | If BooleanExp Statement Statement 
+               | While BooleanExp Statement
+               | Compound Statement Statement
+                 deriving (Show)
 
 data ArithmeticExp = Number Integer
                    | Variable String
@@ -37,8 +46,48 @@ data BooleanExp = Boolean Bool
                 | LessOrEqual ArithmeticExp ArithmeticExp
                 deriving (Show)
 
-aexp = buildExpressionParser arithmeticOperators arithmetic
-bexp = buildExpressionParser booleanOperators boolean
+parse :: Parser Statement
+parse = buildExpressionParser statementOperators statement
+
+statement :: Parser Statement
+statement =   skip
+          <|> conditional 
+          <|> while
+          <|> assign
+
+statementOperators :: OperatorTable Char () Statement
+statementOperators = [[binary ";" compound AssocLeft]]
+
+compound :: Statement -> Statement -> Statement
+compound s1 s2 = Compound s1 s2 
+
+skip :: Parser Statement
+skip = do reserved "skip"
+          return (Skip)
+
+conditional :: Parser Statement
+conditional = do reserved "if"
+                 condition <- booleanExpression
+                 reserved "then"
+                 trueStatement <- statement
+                 reserved "else"
+                 falseStatement <- statement
+                 return (If condition trueStatement falseStatement)
+
+while :: Parser Statement
+while = do reserved "while"
+           condition <- booleanExpression
+           reserved "do"
+           s <- statement
+           return (While condition s)
+
+assign :: Parser Statement
+assign = do name <- identifier
+            reservedOp ":="
+            value <- arithmeticExpression
+            return (Assign name value)
+
+booleanExpression = buildExpressionParser booleanOperators boolean
 
 boolean :: Parser BooleanExp
 boolean =   true 
@@ -50,7 +99,7 @@ booleanOperators = [[prefix "!" Parser.not],
                     [binary "&" Parser.and AssocLeft]]
 
 arithmeticComparison :: Parser BooleanExp
-arithmeticComparison = do { l <- aexp;
+arithmeticComparison = do { l <- arithmeticExpression;
                             do { reservedOp "=";
                                  equals l}
                           <|>
@@ -59,11 +108,11 @@ arithmeticComparison = do { l <- aexp;
                            }
 
 equals :: ArithmeticExp -> Parser BooleanExp
-equals l  = do r <- aexp
+equals l  = do r <- arithmeticExpression
                return (Equal l r)
 
 lessOrEquals :: ArithmeticExp -> Parser BooleanExp
-lessOrEquals l = do r <- aexp
+lessOrEquals l = do r <- arithmeticExpression
                     return (LessOrEqual l r)
 
 not :: BooleanExp -> BooleanExp
@@ -79,6 +128,8 @@ true = do reserved "true"
 false :: Parser BooleanExp
 false = do reserved "false"
            return (Boolean False)
+
+arithmeticExpression = buildExpressionParser arithmeticOperators arithmetic
 
 arithmetic :: Parser ArithmeticExp
 arithmetic = number <|> variable
