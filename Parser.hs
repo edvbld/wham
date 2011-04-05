@@ -14,7 +14,7 @@ whileDef = (emptyDef
               {P.reservedOpNames = ["*", "+", "-", "!", "&", "=", "<=", ":=", 
                                     ";"],
                P.reservedNames = ["true", "false", "skip", "if", "then", 
-                                  "else", "while", "do"],
+                                  "else", "while", "do", "try", "catch"],
                P.identStart = letter,
                P.commentLine = "#"
               })
@@ -32,6 +32,7 @@ data Statement = Skip
                | If BooleanExp Statement Statement 
                | While BooleanExp Statement
                | Compound Statement Statement
+               | TryCatch Statement Statement
                  deriving (Show)
 
 data ArithmeticExp = Number Integer
@@ -56,6 +57,7 @@ statement =   skip
           <|> conditional 
           <|> while
           <|> assign
+          <|> tryCatch
           <|> parens statements
 
 statementOperators :: OperatorTable Char () Statement
@@ -72,16 +74,16 @@ conditional :: Parser Statement
 conditional = do reserved "if"
                  condition <- booleanExpression
                  reserved "then"
-                 trueStatement <- statement
+                 trueStatement <- statements
                  reserved "else"
-                 falseStatement <- statement
+                 falseStatement <- statements
                  return (If condition trueStatement falseStatement)
 
 while :: Parser Statement
 while = do reserved "while"
            condition <- booleanExpression
            reserved "do"
-           s <- statement
+           s <- statements
            return (While condition s)
 
 assign :: Parser Statement
@@ -89,6 +91,13 @@ assign = do name <- identifier
             reservedOp ":="
             value <- arithmeticExpression
             return (Assign name value)
+
+tryCatch :: Parser Statement
+tryCatch = do reserved "try"
+              s1 <- statements
+              reserved "catch"
+              s2 <- statements
+              return (TryCatch s1 s2)
 
 booleanExpression = buildExpressionParser booleanOperators boolean
 
