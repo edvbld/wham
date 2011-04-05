@@ -15,13 +15,15 @@ whileDef = (emptyDef
                                     ";"],
                P.reservedNames = ["true", "false", "skip", "if", "then", 
                                   "else", "while", "do"],
-               P.identStart = letter
+               P.identStart = letter,
+               P.commentLine = "#"
               })
 
 identifier = P.identifier lexer
 reservedOp = P.reservedOp lexer
 reserved = P.reserved lexer
 integer = P.integer lexer
+parens = P.parens lexer
 
 -- parser 
 
@@ -37,23 +39,24 @@ data ArithmeticExp = Number Integer
                    | Add ArithmeticExp ArithmeticExp
                    | Mul ArithmeticExp ArithmeticExp
                    | Sub ArithmeticExp ArithmeticExp
-                   deriving (Show)
+                     deriving (Show)
 
 data BooleanExp = Boolean Bool
                 | Not BooleanExp
                 | And BooleanExp BooleanExp
                 | Equal ArithmeticExp ArithmeticExp
                 | LessOrEqual ArithmeticExp ArithmeticExp
-                deriving (Show)
+                  deriving (Show)
 
-parse :: Parser Statement
-parse = buildExpressionParser statementOperators statement
+statements :: Parser Statement
+statements = buildExpressionParser statementOperators statement
 
 statement :: Parser Statement
 statement =   skip
           <|> conditional 
           <|> while
           <|> assign
+          <|> parens statements
 
 statementOperators :: OperatorTable Char () Statement
 statementOperators = [[binary ";" compound AssocLeft]]
@@ -93,6 +96,7 @@ boolean :: Parser BooleanExp
 boolean =   true 
         <|> false
         <|> arithmeticComparison
+        <|> parens booleanExpression
 
 booleanOperators :: OperatorTable Char () BooleanExp
 booleanOperators = [[prefix "!" Parser.not],
@@ -132,7 +136,9 @@ false = do reserved "false"
 arithmeticExpression = buildExpressionParser arithmeticOperators arithmetic
 
 arithmetic :: Parser ArithmeticExp
-arithmetic = number <|> variable
+arithmetic =   number 
+           <|> variable
+           <|> parens arithmeticExpression
 
 number :: Parser ArithmeticExp
 number = do n <- integer
