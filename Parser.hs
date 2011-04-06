@@ -1,31 +1,39 @@
-module Parser where
+module Parser(
+        Statement(..), 
+        ArithmeticExp(..), 
+        BooleanExp(..), 
+        Parser.parse) where
 
-import Text.ParserCombinators.Parsec
+import qualified Text.ParserCombinators.Parsec as P
 import Text.ParserCombinators.Parsec.Expr
-import qualified Text.ParserCombinators.Parsec.Token as P
+import qualified Text.ParserCombinators.Parsec.Token as T
 import Text.ParserCombinators.Parsec.Language (emptyDef)
 
 -- lexer
 
-lexer :: P.TokenParser ()
-lexer = P.makeTokenParser whileDef
+lexer :: T.TokenParser ()
+lexer = T.makeTokenParser whileDef
 
 whileDef = (emptyDef
-              {P.reservedOpNames = ["*", "+", "-", "!", "&", "=", "<=", ":=", 
+              {T.reservedOpNames = ["*", "+", "-", "!", "&", "=", "<=", ":=", 
                                     ";"],
-               P.reservedNames = ["true", "false", "skip", "if", "then", 
+               T.reservedNames = ["true", "false", "skip", "if", "then", 
                                   "else", "while", "do", "try", "catch"],
-               P.identStart = letter,
-               P.commentLine = "#"
+               T.identStart = letter,
+               T.commentLine = "#"
               })
 
-identifier = P.identifier lexer
-reservedOp = P.reservedOp lexer
-reserved = P.reserved lexer
-integer = P.integer lexer
-parens = P.parens lexer
+identifier = T.identifier lexer
+reservedOp = T.reservedOp lexer
+reserved = T.reserved lexer
+integer = T.integer lexer
+parens = T.parens lexer
 
--- parser 
+-- parser
+
+type Parser = P.Parser
+letter = P.letter
+(<|>) = (P.<|>)
 
 data Statement = Skip
                | Assign String ArithmeticExp
@@ -49,6 +57,12 @@ data BooleanExp = Boolean Bool
                 | Equal ArithmeticExp ArithmeticExp
                 | LessOrEqual ArithmeticExp ArithmeticExp
                   deriving (Show)
+
+parse :: String -> Either String Statement
+parse s = 
+    case P.parse statements "" s of
+        Left err -> Left (show err)
+        Right stmt -> Right stmt
 
 statements :: Parser Statement
 statements = buildExpressionParser statementOperators statement
