@@ -34,6 +34,7 @@ parens = T.parens lexer
 type Parser = P.Parser
 letter = P.letter
 (<|>) = (P.<|>)
+try = P.try
 
 data Statement = Skip
                | Assign String ArithmeticExp
@@ -119,7 +120,7 @@ booleanExpression = buildExpressionParser booleanOperators boolean
 boolean :: Parser BooleanExp
 boolean =   true 
         <|> false
-        <|> arithmeticComparison
+        <|> try (arithmeticComparison)
         <|> parens booleanExpression
 
 booleanOperators :: OperatorTable Char () BooleanExp
