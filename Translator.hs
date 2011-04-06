@@ -1,4 +1,4 @@
-module Translator where
+module Translator(AMExpression(..), translate) where
 
 import Parser
 
@@ -16,6 +16,9 @@ data AMExpression = PUSH Integer
                   | LE
                   | AND
                     deriving (Show)
+
+translate :: Statement -> [AMExpression]
+translate s = translateStatement s
 
 translateArithmetic :: ArithmeticExp -> [AMExpression]
 translateArithmetic (Number n) = [(PUSH n)]
