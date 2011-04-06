@@ -40,6 +40,7 @@ data ArithmeticExp = Number Integer
                    | Add ArithmeticExp ArithmeticExp
                    | Mul ArithmeticExp ArithmeticExp
                    | Sub ArithmeticExp ArithmeticExp
+                   | Div ArithmeticExp ArithmeticExp
                      deriving (Show)
 
 data BooleanExp = Boolean Bool
@@ -158,7 +159,7 @@ variable = do var <- identifier
               return (Variable var)
 
 arithmeticOperators :: OperatorTable Char () ArithmeticExp
-arithmeticOperators = [[binary "*" mul AssocLeft],
+arithmeticOperators = [[binary "*" mul AssocLeft, binary "/" divide AssocLeft],
                        [binary "+" add AssocLeft, binary "-" sub AssocLeft]]
 
 binary symbol operation assoc = Infix (do {reservedOp symbol; 
@@ -170,6 +171,9 @@ prefix symbol operation = Prefix (do { reservedOp symbol;
 
 mul :: ArithmeticExp -> ArithmeticExp -> ArithmeticExp 
 mul l r = Mul l r
+
+divide :: ArithmeticExp -> ArithmeticExp -> ArithmeticExp
+divide l r = Div l r
 
 add :: ArithmeticExp -> ArithmeticExp -> ArithmeticExp 
 add l r = Add l r
