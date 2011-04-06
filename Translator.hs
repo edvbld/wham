@@ -11,6 +11,9 @@ data AMExpression = PUSH Integer
                   | TRUE
                   | FALSE
                   | ADD
+                  | SUB
+                  | MULT
+                  | DIV
                   | NEG
                   | EQUAL
                   | LE
@@ -26,6 +29,15 @@ translateArithmetic (Variable x) = [(FETCH x)]
 translateArithmetic (Add a1 a2) = (translateArithmetic a1) ++  
                                   (translateArithmetic a2) ++
                                   [ADD]
+translateArithmetic (Sub a1 a2) = (translateArithmetic a2) ++  
+                                  (translateArithmetic a1) ++
+                                  [SUB]
+translateArithmetic (Mul a1 a2) = (translateArithmetic a2) ++  
+                                  (translateArithmetic a1) ++
+                                  [MULT]
+translateArithmetic (Div a1 a2) = (translateArithmetic a2) ++  
+                                  (translateArithmetic a1) ++
+                                  [DIV]
 
 translateBoolean :: BooleanExp -> [AMExpression]
 translateBoolean (Boolean True) = [TRUE]
