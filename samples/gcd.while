@@ -1,0 +1,20 @@
+# Computes the greatest common divisor of 21 and 70.
+# Should terminate with a = b = 7.
+
+
+# PUSH-21
+# STORE-a
+# PUSH-70
+# STORE-b
+# LOOP(FETCH-b FETCH-a EQ NEG,
+#      FETCH-b FETCH-a LE BRANCH(FETCH-a FETCH-b SUB STORE-b,
+#                                FETCH-b FETCH-a SUB STORE-a))
+
+
+a := 21;
+b := 70;
+
+while !(a = b) do
+    if a <= b
+    then b := b - a
+    else a := a - b

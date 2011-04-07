@@ -1,0 +1,8 @@
+# Computes the factorial of 9.
+# Should terminate with f = 362880, x = 1
+
+f := 1;
+x := 9;
+while 2 <= x do
+    f := f * x;
+    x := x - 1

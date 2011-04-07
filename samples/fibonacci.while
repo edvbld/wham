@@ -1,0 +1,11 @@
+# Computes the 20th fibonacci number.
+# Should terminate with j = 6765
+
+k := 20;
+i := 0;
+j := 1;
+while 2 <= k do
+    k := k - 1;
+    tmp := j;
+    j := i + j;
+    i := tmp

@@ -1,0 +1,16 @@
+# Should terminate with x = 17 and y = 19
+
+try
+    x := 4;
+    y := 5828;
+    (while !(x * y = 323) do
+        try
+            x := y / x;
+            y := x / y
+        catch
+            x := 17;
+            y := 19);
+    x := x / (0 - (323 - x * y))
+catch
+    x := 17;
+    y := 19
