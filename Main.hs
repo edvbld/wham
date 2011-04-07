@@ -1,9 +1,15 @@
-module Main where
+module Main(main) where
 
+import System.Environment
 import Parser
 import Translator
 import Interpreter
 
-run s = 
-    case parse s of
-        Right stmt -> evaluate (translate stmt) []
+main :: IO()
+main = do args <- getArgs
+          if (length args) /= 1
+            then putStrLn "usage: wham <name-of-file>"
+            else do content <- readFile (head args)
+                    case parse content of
+                        Right stmt -> print (evaluate (translate stmt) [])
+                        Left err -> print err
