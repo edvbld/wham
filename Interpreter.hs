@@ -39,7 +39,7 @@ eval (NEG:exps) ((Bool a):stack) state = eval exps stack' state
 eval ((BRANCH s1 s2):exps) ((Bool b):stack) state = eval exps' stack state
     where exps' = if b then s1 ++ exps else s2 ++ exps
 eval ((LOOP b s):exps) stack state = eval exps' stack state
-    where exps' = b ++ [(BRANCH (s ++ [LOOP b s]) [NOOP])]
+    where exps' = b ++ [(BRANCH (s ++ [LOOP b s]) [NOOP])] ++ exps
 
 update :: String -> Integer -> AMState -> AMState
 update x n s = 
