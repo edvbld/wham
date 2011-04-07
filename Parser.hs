@@ -28,6 +28,7 @@ reservedOp = T.reservedOp lexer
 reserved = T.reserved lexer
 integer = T.integer lexer
 parens = T.parens lexer
+whitespace = T.whiteSpace lexer
 
 -- parser
 
@@ -35,6 +36,7 @@ type Parser = P.Parser
 letter = P.letter
 (<|>) = (P.<|>)
 try = P.try
+eof = P.eof
 
 data Statement = Skip
                | Assign String ArithmeticExp
@@ -59,11 +61,15 @@ data BooleanExp = Boolean Bool
                 | LessOrEqual ArithmeticExp ArithmeticExp
                   deriving (Show)
 
-parse :: String -> Either String Statement
-parse s = 
-    case P.parse statements "" s of
-        Left err -> Left (show err)
-        Right stmt -> Right stmt
+parse :: String -> Either P.ParseError Statement
+parse s = P.parse parser "" s
+
+parser :: Parser Statement
+parser = do whitespace
+            result <- statements
+            eof
+            return result
+
 
 statements :: Parser Statement
 statements = buildExpressionParser statementOperators statement
