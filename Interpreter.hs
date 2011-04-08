@@ -1,76 +1,95 @@
-module Interpreter(evaluate, StateMode(..)) where
+module Interpreter(evaluate,
+                   step,
+                   StateMode(..), 
+                   Configuration, 
+                   Stack, 
+                   EState,
+                   StackElement(..)) where
 
 import qualified Data.Map as Map
 import Translator
 
-data StackElement = Integer Integer | Bool Bool 
+data StackElement = Integer Integer 
+                  | Bool Bool 
+                    deriving (Show)
 type Stack = [StackElement]
 data StateMode = Normal 
                | Exception 
                  deriving (Eq, Ord, Show)
 type State = Map.Map String Integer
 type EState = (State, StateMode)
+type Configuration = ([AMExpression], Stack, EState)
 
 evaluate :: [AMExpression] -> [(String, Integer)] -> 
             ([(String, Integer)], StateMode)
-evaluate exps state = (stateList, mode)
+evaluate exps variables = (stateList, mode)
     where
-        (finalState, mode) = eval exps [] ((Map.fromList state), Normal)
+        state = (Map.fromList variables, Normal)
+        (_, _, (finalState, mode)) = eval (exps, [], state)
         stateList = Map.toList finalState
- 
-eval :: [AMExpression] -> Stack -> EState -> EState
-eval [] stack state = state
-eval ((PUSH n):exps) stack (state, Normal) = 
-    eval exps ((Integer n):stack) (state, Normal)
-eval ((STORE x):exps) ((Integer n):stack) (state, Normal) = 
-    eval exps stack (state', Normal)
+
+eval :: Configuration -> Configuration
+eval ([], stack, state) = ([], stack, state)
+eval c = eval $ step c
+
+step :: Configuration -> Configuration
+step (exps, stack, state) = istep exps stack state
+
+istep :: [AMExpression] -> Stack -> EState -> Configuration
+istep [] stack state = ([], stack, state)
+istep (PUSH n:exps) stack state@(_, Normal) = 
+    (exps, Integer n:stack, state)
+istep (STORE x:exps) (Integer n:stack) (state, Normal) = 
+    (exps, stack, (state', Normal))
         where state' = update x n state 
-eval ((FETCH x):exps) stack (state, Normal) = eval exps stack' (state, Normal)
-    where stack' = ((Interpreter.lookup x state):stack) 
-eval (NOOP:exps) stack (state, Normal) = eval exps stack (state, Normal)
-eval (ADD:exps) ((Integer a):(Integer b):stack) (state, Normal) = 
-    eval exps stack' (state, Normal)
-        where stack' = ((Integer (a+b)):stack)
-eval (SUB:exps) ((Integer a):(Integer b):stack) (state, Normal) = 
-    eval exps stack' (state, Normal)
-        where stack' = ((Integer (a-b)):stack)
-eval (MULT:exps) ((Integer a):(Integer b):stack) (state, Normal) = 
-    eval exps stack' (state, Normal)
-        where stack' = ((Integer (a*b)):stack)
-eval (DIV:exps) ((Integer a):(Integer b):stack) (state, Normal) = 
+istep (FETCH x:exps) stack s@(state, Normal) = 
+    (exps, stack', s)
+        where stack' = (Interpreter.lookup x state):stack
+istep (NOOP:exps) stack state@(_, Normal) = 
+    (exps, stack, state)
+istep (ADD:exps) (Integer a:Integer b:stack) state@(_, Normal) = 
+    (exps, stack', state)
+        where stack' = Integer (a+b):stack
+istep (SUB:exps) (Integer a:Integer b:stack) state@(_, Normal) = 
+    (exps, stack', state)
+        where stack' = Integer (a-b):stack
+istep (MULT:exps) (Integer a:Integer b:stack) state@(_, Normal) = 
+    (exps, stack', state)
+        where stack' = Integer (a*b):stack
+istep (DIV:exps) (Integer a:Integer b:stack) (state, Normal) = 
     if b == 0
-        then eval exps stack  (state, Exception)
-        else eval exps stack' (state, Normal)
+        then (exps, stack, (state, Exception))
+        else (exps, stack', (state, Normal))
         where
-            stack' = ((Integer (div a b)):stack)
-eval (TRUE:exps) stack (state, Normal) = 
-    eval exps ((Bool True):stack) (state, Normal)
-eval (FALSE:exps) stack (state, Normal) = 
-    eval exps ((Bool False):stack) (state, Normal)
-eval (EQUAL:exps) ((Integer a):(Integer b):stack) (state, Normal) = 
-    eval exps stack' (state, Normal)
-        where stack' = ((Bool (a == b)):stack)
-eval (LE:exps) ((Integer a):(Integer b):stack) (state, Normal) = 
-    eval exps stack' (state, Normal)
-        where stack' = ((Bool (a <= b)):stack)
-eval (AND:exps) ((Bool a):(Bool b):stack) (state, Normal) = 
-    eval exps stack' (state, Normal)
-        where stack' = ((Bool (a && b)):stack)
-eval (NEG:exps) ((Bool a):stack) (state, Normal) = 
-    eval exps stack' (state, Normal)
-        where stack' = ((Bool (not a)):stack)
-eval ((BRANCH s1 s2):exps) ((Bool b):stack) (state, Normal) = 
-    eval exps' stack (state, Normal)
+            stack' = Integer (div a b):stack
+istep (TRUE:exps) stack state@(_, Normal) = 
+    (exps, Bool True:stack, state)
+istep (FALSE:exps) stack state@(_, Normal) = 
+    (exps, Bool False:stack, state)
+istep (EQUAL:exps) (Integer a:Integer b:stack) state@(_, Normal) =
+    (exps, stack', state)
+        where stack' = Bool (a == b):stack
+istep (LE:exps) (Integer a:Integer b:stack) state@(_, Normal) =
+    (exps, stack', state)
+        where stack' = Bool (a <= b):stack
+istep (AND:exps) (Bool a:Bool b:stack) state@(_, Normal) =
+    (exps, stack', state)
+        where stack' = Bool (a && b):stack
+istep (NEG:exps) (Bool a:stack) state@(_, Normal) =
+    (exps, stack', state)
+        where stack' = Bool (not a):stack
+istep (BRANCH s1 s2:exps) (Bool b:stack) state@(_, Normal) =
+    (exps', stack, state)
         where exps' = if b then s1 ++ exps else s2 ++ exps
-eval ((LOOP b s):exps) stack (state, Normal) = 
-    eval exps' stack (state, Normal)
+istep (LOOP b s:exps) stack state@(_, Normal) =
+    (exps', stack, state)
         where exps' = b ++ [(BRANCH (s ++ [LOOP b s]) [NOOP])] ++ exps
-eval ((CATCH s):exps) stack (state, Normal) =
-    eval exps stack (state, Normal)
-eval ((CATCH s):exps) stack (state, Exception) = 
-    eval (s ++ exps) stack (state, Normal)
-eval (_:exps) stack (state, Exception) = 
-    eval exps stack (state, Exception)
+istep (CATCH s:exps) stack state@(_, Normal) =
+    (exps, stack, state)
+istep (CATCH s:exps) stack (state, Exception) =
+    ((s ++ exps), stack, (state, Normal))
+istep (_:exps) stack state@(_, Exception) =
+    (exps, stack, state)
 
 update :: String -> Integer -> State -> State
 update x n s = 
