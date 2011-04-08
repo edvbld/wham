@@ -2,9 +2,10 @@ module Parser(
         Statement(..), 
         ArithmeticExp(..), 
         BooleanExp(..), 
-        Parser.parse) where
+        parser,
+        parse) where
 
-import qualified Text.ParserCombinators.Parsec as P
+import Text.ParserCombinators.Parsec 
 import Text.ParserCombinators.Parsec.Expr
 import qualified Text.ParserCombinators.Parsec.Token as T
 import Text.ParserCombinators.Parsec.Language (emptyDef)
@@ -14,6 +15,7 @@ import Text.ParserCombinators.Parsec.Language (emptyDef)
 lexer :: T.TokenParser ()
 lexer = T.makeTokenParser whileDef
 
+whileDef :: T.LanguageDef st
 whileDef = (emptyDef
               {T.reservedOpNames = ["*", "+", "-", "!", "&", "=", "<=", ":=", 
                                     ";"],
@@ -23,20 +25,26 @@ whileDef = (emptyDef
                T.commentLine = "#"
               })
 
+
+identifier :: CharParser () String
 identifier = T.identifier lexer
+
+reservedOp :: String -> CharParser () ()
 reservedOp = T.reservedOp lexer
+
+reserved :: String -> CharParser () ()
 reserved = T.reserved lexer
+
+integer :: CharParser () Integer
 integer = T.integer lexer
+
+parens :: CharParser () a -> CharParser () a
 parens = T.parens lexer
+
+whitespace :: CharParser () ()
 whitespace = T.whiteSpace lexer
 
 -- parser
-
-type Parser = P.Parser
-letter = P.letter
-(<|>) = (P.<|>)
-try = P.try
-eof = P.eof
 
 data Statement = Skip
                | Assign String ArithmeticExp
@@ -61,15 +69,11 @@ data BooleanExp = Boolean Bool
                 | LessOrEqual ArithmeticExp ArithmeticExp
                   deriving (Show)
 
-parse :: String -> Either P.ParseError Statement
-parse s = P.parse parser "" s
-
 parser :: Parser Statement
 parser = do whitespace
             result <- statements
             eof
             return result
-
 
 statements :: Parser Statement
 statements = buildExpressionParser statementOperators statement
@@ -121,6 +125,7 @@ tryCatch = do reserved "try"
               s2 <- statements
               return (TryCatch s1 s2)
 
+booleanExpression :: Parser BooleanExp
 booleanExpression = buildExpressionParser booleanOperators boolean
 
 boolean :: Parser BooleanExp
@@ -164,6 +169,7 @@ false :: Parser BooleanExp
 false = do reserved "false"
            return (Boolean False)
 
+arithmeticExpression :: Parser ArithmeticExp
 arithmeticExpression = buildExpressionParser arithmeticOperators arithmetic
 
 arithmetic :: Parser ArithmeticExp
@@ -183,10 +189,12 @@ arithmeticOperators :: OperatorTable Char () ArithmeticExp
 arithmeticOperators = [[binary "*" mul AssocLeft, binary "/" divide AssocLeft],
                        [binary "+" add AssocLeft, binary "-" sub AssocLeft]]
 
+binary :: String -> (a -> a -> a) -> Assoc -> Operator Char () a
 binary symbol operation assoc = Infix (do {reservedOp symbol; 
                                            return operation}) 
                                 assoc
 
+prefix :: String -> (a -> a) -> Operator Char () a
 prefix symbol operation = Prefix (do { reservedOp symbol; 
                                        return operation })
 

@@ -1,7 +1,6 @@
 module Main(main) where
 
 import System.Environment (getArgs)
-import Data.Maybe (fromMaybe)
 import Data.List (sort)
 import System.Console.GetOpt
 import Parser
@@ -12,43 +11,50 @@ main :: IO()
 main = do args <- getArgs
           case getOpt RequireOrder options args of
             (flags, [fname], []) -> do content <- readFile fname
-                                       eval (sort flags) content
+                                       eval fname (sort flags) content
             (_, _, msgs) -> error $ concat msgs ++ usageInfo header options
           where
 
-eval :: [Flag] -> String -> IO()
-eval [] content = run content [] False
-eval [State s] content = run content s False
-eval [Debug] content = run content [] True
-eval [Debug, State s] content = run content s True
+eval :: String -> [Flag] -> String -> IO()
+eval fname [] content = run fname content [] False
+eval fname [State s] content = run fname content s False
+eval fname [Debug] content = run fname content [] True
+eval fname [Debug, State s] content = run fname content s True
+eval _ _ _ = error $ usageInfo header options
 
-run :: String -> [(String, Integer)] -> Bool -> IO()
-run content state shouldDebug = case parse content of 
+run :: String -> String -> [(String, Integer)] -> Bool -> IO()
+run fname content vars shouldDebug = case parse parser fname content of 
     Right stmt -> do let exps = translate stmt
                      if shouldDebug
-                        then debug exps state
-                        else print (evaluate (translate stmt) state)
+                        then debug exps vars
+                        else case evaluate (translate stmt, [], toState vars) of
+                                Left err -> print $ "Error: " ++ err
+                                Right c -> print c
     Left err -> print err
 
 debug :: [AMExpression] -> [(String, Integer)] -> IO()
-debug exps list = impl (exps, [], (state list))
+debug exps vars = impl (exps, [], (toState vars))
     where
-        impl ([], _, state) = return ()
-        impl c = do let c' = step c
-                    print c'
-                    getLine
-                    impl c'
+        impl ([], _, _) = return ()
+        impl c = do case step c of 
+                        Left err -> print $ "Error: " ++ err
+                        Right c' -> do print c'
+                                       _ <- getLine
+                                       impl c'
 
 data Flag = Debug | State [(String, Integer)] deriving (Eq, Show, Ord)
+
+readState :: String -> Flag
+readState s = State vars
+    where
+        list = (reads s)::[([(String, Integer)], String)]
+        vars = if length list /= 1 then [] else fst $ head list
 
 options :: [OptDescr Flag]
 options = [Option ['d'] ["debug"] (NoArg Debug) 
            "show debug info",
-           Option ['s'] ["state"] (ReqArg makeState "state") 
+           Option ['s'] ["state"] (ReqArg readState "state") 
            "evaluate from the given state"]
-
-makeState :: String -> Flag
-makeState s = State ((read s)::[(String, Integer)])
 
 header :: String
 header = "[OPTIONS] file-name"
