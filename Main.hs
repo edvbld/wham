@@ -12,6 +12,9 @@ main = do args <- getArgs
           case getOpt RequireOrder options args of
             (flags, [fname], []) -> do content <- readFile fname
                                        eval fname (sort flags) content
+                                       `catch`
+                                       (\_ -> 
+                                          error $ "Problem with file " ++ fname)
             (_, _, msgs) -> error $ concat msgs ++ usageInfo header options
           where
 
