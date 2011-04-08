@@ -65,6 +65,12 @@ eval ((BRANCH s1 s2):exps) ((Bool b):stack) (state, Normal) =
 eval ((LOOP b s):exps) stack (state, Normal) = 
     eval exps' stack (state, Normal)
         where exps' = b ++ [(BRANCH (s ++ [LOOP b s]) [NOOP])] ++ exps
+eval ((CATCH s):exps) stack (state, Normal) =
+    eval exps stack (state, Normal)
+eval ((CATCH s):exps) stack (state, Exception) = 
+    eval (s ++ exps) stack (state, Normal)
+eval (_:exps) stack (state, Exception) = 
+    eval exps stack (state, Exception)
 
 update :: String -> Integer -> State -> State
 update x n s = 
