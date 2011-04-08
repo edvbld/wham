@@ -38,8 +38,11 @@ eval (MULT:exps) ((Integer a):(Integer b):stack) (state, Normal) =
     eval exps stack' (state, Normal)
         where stack' = ((Integer (a*b)):stack)
 eval (DIV:exps) ((Integer a):(Integer b):stack) (state, Normal) = 
-    eval exps stack' (state, Normal)
-        where stack' = ((Integer (div a b)):stack)
+    if b == 0
+        then eval exps stack  (state, Exception)
+        else eval exps stack' (state, Normal)
+        where
+            stack' = ((Integer (div a b)):stack)
 eval (TRUE:exps) stack (state, Normal) = 
     eval exps ((Bool True):stack) (state, Normal)
 eval (FALSE:exps) stack (state, Normal) = 
