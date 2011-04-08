@@ -1,5 +1,6 @@
 module Interpreter(evaluate,
                    step,
+                   state,
                    StateMode(..), 
                    Configuration, 
                    Stack, 
@@ -24,8 +25,7 @@ evaluate :: [AMExpression] -> [(String, Integer)] ->
             ([(String, Integer)], StateMode)
 evaluate exps variables = (stateList, mode)
     where
-        state = (Map.fromList variables, Normal)
-        (_, _, (finalState, mode)) = eval (exps, [], state)
+        (_, _, (finalState, mode)) = eval (exps, [], (state variables))
         stateList = Map.toList finalState
 
 eval :: Configuration -> Configuration
@@ -90,6 +90,9 @@ istep (CATCH s:exps) stack (state, Exception) =
     ((s ++ exps), stack, (state, Normal))
 istep (_:exps) stack state@(_, Exception) =
     (exps, stack, state)
+
+state :: [(String, Integer)] -> EState
+state list = (Map.fromList list, Normal)
 
 update :: String -> Integer -> State -> State
 update x n s = 
