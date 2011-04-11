@@ -80,6 +80,8 @@ istep (BRANCH s1 s2:exps) (Bool b:stack) state@(_, Normal) =
 istep (LOOP b s:exps) stack state@(_, Normal) =
     Right (exps', stack, state)
         where exps' = b ++ [(BRANCH (s ++ [LOOP b s]) [NOOP])] ++ exps
+istep (TRY s1 s2:exps) stack state@(_, Normal) =
+    Right (s1 ++ (CATCH s2):exps, stack, state)
 istep (CATCH _:exps) stack state@(_, Normal) =
     Right (exps, stack, state)
 istep (CATCH s:exps) stack (state, Exception) =

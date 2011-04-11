@@ -7,6 +7,7 @@ data AMExpression = PUSH Integer
                   | STORE String
                   | BRANCH [AMExpression] [AMExpression]
                   | LOOP [AMExpression] [AMExpression]
+                  | TRY [AMExpression] [AMExpression]
                   | CATCH [AMExpression]
                   | NOOP
                   | TRUE
@@ -64,5 +65,5 @@ translateStatement (If b s1 s2) = (translateBoolean b) ++
                                           (translateStatement s2)]
 translateStatement (While b s) = [LOOP (translateBoolean b) 
                                        (translateStatement s)]
-translateStatement (TryCatch s1 s2) = (translateStatement s1) ++
-                                      [CATCH (translateStatement s2)]
+translateStatement (TryCatch s1 s2) = [TRY (translateStatement s1)
+                                           (translateStatement s2)]
