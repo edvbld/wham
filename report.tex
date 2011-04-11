@@ -1,0 +1,55 @@
+\documentclass[11pt,oneside,a4paper]{article}
+\usepackage{amsmath}
+\usepackage{stmaryrd}
+  
+\begin{document}
+\title{Report for Lab Assignment 1, DD2457 Program Semantics and Analysis}
+\author{Erik Helin}
+\date{\today}
+\maketitle
+
+\section*{New Rules}
+The following new rules have been added to the various semantics:
+\subsection*{Natural semantics}
+\begingroup
+\addtolength{\jot}{.5em}
+\begin{align*}
+[\text{try}_{ns}^1] \quad \quad &
+<\texttt{try}\: S_1 \: \texttt{catch}\: S_2, \hat{s}> \rightarrow \hat{s} \\
+[\text{try}_{ns}^2] \quad \quad &
+\frac{<S_1,s> \rightarrow s^{'}}
+     {<\texttt{try}\: S_1 \: \texttt{catch} \: S_2, s> \rightarrow s^{'}}  \\
+[\text{try}_{ns}^3] \quad \quad &
+\frac{<S_1,s> \rightarrow \hat{s}, \: <S_2, \hat{s}> \rightarrow s^{'}}
+     {<\texttt{try}\: S_1 \: \texttt{catch} \: S_2, s> \rightarrow s^{'}} \\
+[\text{ass}_{ns}^2] \quad \quad &
+<x := a, \hat{s}> \rightarrow \hat{s} \\
+[\text{ass}_{ns}^3] \quad \quad &
+<x := a, s> \rightarrow \hat{s} \quad 
+\text{if} \: \mathcal{A} \llbracket a \rrbracket s = \bot \\
+[\text{skip}_{ns}^2] \quad \quad &
+<\texttt{skip}, \hat{s}> \rightarrow \hat{s} \\
+[\text{comp}_{ns}^2] \quad \quad &
+<S_1;S_2, \hat{s}> \rightarrow \hat{s} \\
+[\text{comp}_{ns}^3] \quad \quad &
+\frac{<S_1, s> \rightarrow \hat{s}}{<S_1;S_2, s> \rightarrow \hat{s}} \\
+[\text{comp}_{ns}^4] \quad \quad &
+\frac{<S_1, s> \rightarrow s^{'}, <S_2, s^{'}> \rightarrow \hat{s}}
+{<S_1;S_2, s> \rightarrow \hat{s}} \\
+[\text{if}_{ns}^{\:3}] \quad \quad & <\texttt{if}\:b\: \texttt{then}\:  S_1 \: 
+\texttt{else} \: S_2, \hat{s}> \rightarrow \hat{s} \\
+[\text{if}_{ns}^{\:4}] \quad \quad & \frac{<S_1, s> \rightarrow \hat{s}}
+{ <\texttt{if}\:b\: \texttt{then}\:  S_1 \: \texttt{else} \: S_2, s> 
+\rightarrow \hat{s}} \quad \text{if} \: \mathcal{B} \llbracket b \rrbracket s
+= \textbf{tt}\\
+[\text{if}_{ns}^{\:5}] \quad \quad & \frac{<S_2, s> \rightarrow \hat{s}}
+{ <\texttt{if}\:b\: \texttt{then}\:  S_1 \: \texttt{else} \: S_2, s> 
+\rightarrow \hat{s}} \quad \text{if} \: \mathcal{B} \llbracket b \rrbracket s
+= \textbf{ff}\\
+[\text{if}_{ns}^{\:6}] \quad \quad & <\texttt{if}\:b\: \texttt{then}\:  S_1 \: 
+\texttt{else} \: S_2, s> \rightarrow \hat{s} \quad 
+\text{if} \: \mathcal{B} \llbracket b \rrbracket s
+= \bot \\
+\end{align*}
+\endgroup
+\end{document}
