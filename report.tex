@@ -1,5 +1,6 @@
 \documentclass[11pt,oneside,a4paper]{article}
 \usepackage{amsmath}
+\usepackage{amsfonts}
 \usepackage{stmaryrd}
   
 \begin{document}
@@ -62,4 +63,26 @@ The following new rules have been added to the various semantics:
 \quad \text{if} \: \mathcal{B} \llbracket b \rrbracket s = \textbf{tt} \\
 \end{align*}
 \endgroup
+
+\subsection*{AM instructions}
+\begin{align*}
+\text{DIV}\: |\: \text{TRY}\:(c,c)\: |\: \text{CATCH}
+\end{align*}
+
+\subsection*{AM Stuctural Operational Rules}
+\begingroup
+\addtolength{\jot}{.5em}
+\begin{align*}
+<\text{DIV}:c, n_1:n_2:e, s> \: &\triangleright <c, (n_1 / n_2):e, s>& \quad 
+\text{if} \; n_1, n_2 \in \mathbb{Z}, n_2 \neq 0 \\
+<\text{DIV}:c, n_1:n_2:e, s> \: &\triangleright <c, e, \hat{s}>& \quad
+\text{if} \; n_1, n_2 \in \mathbb{Z}, n_2 = 0 \\
+<\text{TRY}\:(c_1, c_2):c, e, s> \: &\triangleright 
+<c_1:\text{CATCH}\:(c_2):c, e, s>& \\
+<\text{CATCH}\:(c_1):c, e, s> &\triangleright <c, e, s>& \\
+<\text{CATCH}\:(c_1):c, e, \hat{s}> &\triangleright <c_1:c, e, s>& \\
+<\text{\_}:c, e, \hat{s}> &\triangleright <c, e, \hat{s}>&
+\end{align*}
+\endgroup
+
 \end{document}
