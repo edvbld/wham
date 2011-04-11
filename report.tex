@@ -50,6 +50,16 @@ The following new rules have been added to the various semantics:
 \texttt{else} \: S_2, s> \rightarrow \hat{s} \quad 
 \text{if} \: \mathcal{B} \llbracket b \rrbracket s
 = \bot \\
+[\text{while}_{ns}^3] \quad \quad & <\texttt{while}\: b \:\texttt{do}\: S, 
+\hat{s}> \rightarrow \hat{s} \\
+[\text{while}_{ns}^4] \quad \quad & 
+\frac{<S,s> \rightarrow \hat{s}}{<\texttt{while}\: b \:\texttt{do}\: S, 
+\hat{s}> \rightarrow \hat{s}} \\
+[\text{while}_{ns}^5] \quad \quad & 
+\frac{<S,s> \rightarrow s^{'}, <\texttt{while}\: b \: \texttt{do} \: S, s^{'}>
+\rightarrow \hat{s}}
+{<\texttt{while}\: b \: \texttt{do}\: S, s> \rightarrow \hat{s}} 
+\quad \text{if} \: \mathcal{B} \llbracket b \rrbracket s = \textbf{tt} \\
 \end{align*}
 \endgroup
 \end{document}
