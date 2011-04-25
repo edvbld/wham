@@ -3,6 +3,17 @@
 \usepackage{amsfonts}
 \usepackage{stmaryrd}
 \usepackage{trfrac}
+
+\newenvironment{changemargin}[2]{%
+\begin{list}{}{%
+\setlength{\topsep}{0pt}%
+\setlength{\leftmargin}{#1}%
+\setlength{\rightmargin}{#2}%
+\setlength{\listparindent}{\parindent}%
+\setlength{\itemindent}{\parindent}%
+\setlength{\parsep}{\parskip}%
+}%
+\item[]}{\end{list}}
   
 \begin{document}
 \title{Report for Lab Assignment 1, DD2457 Program Semantics and Analysis}
@@ -87,9 +98,28 @@ The following new rules have been added to the various semantics:
 \endgroup
 
 \subsection*{Derivation tree}
+\begin{changemargin}{-2.5cm}{\rightmargin}
 \[
-\trfrac[\(\text{comp}_{ns}\)]{x := 7}{x := 7; \textbf{try}\: x := x - 7; 
-x := 7 / x; x := x + 7 \: \textbf{catch}\: x := x - 7}
+\trfrac[\(\text{comp}_{ns}\)]{
+\trfrac[\(\text{ass}_{ns}\)]{s_0[x \mapsto 7]}{<x := 7, s_0> \rightarrow s_2}
+\trfrac[\(\text{try}^3_{ns}\)]{
+\trfrac[\(\text{comp}_{ns}\)]{T_1}
+{<x := x - 7; x := 7 / x; x := x + 7, s_2> \rightarrow \hat{s}_3} 
+\trfrac[\(\text{ass}_{ns}\)]{T_2}
+{<x := x - 7, \hat{s}_3> \rightarrow s_1}}
+{<\textbf{try}\: x := x - 7; x := 7 / x; x := x + 7 \: \textbf{catch}\:
+x := x - 7, s_2> \rightarrow s_1}}
+{<x := 7; \textbf{try}\: x := x - 7; x := 7 / x; x := x + 7 \: \textbf{catch}\:
+x := x - 7, s_0> \rightarrow s_1}
 \]
-
+\end{changemargin}
+\[
+\trfrac[]{
+\trfrac[\(\text{ass}_{ns}\)]{s_2[x \mapsto s_2(x) - 7]}
+{<x := x - 7, s_2> \rightarrow s_3}
+\trfrac[\(\text{comp}_{ns}\)]{
+<x := 7/x, s_3> \rightarrow \hat{s_3} <x := x + 7, \hat{s_3}> \rightarrow \hat{s}_3}
+{<x := 7 / x; x := x + 7, s_3> \rightarrow \hat{s}_3}
+}{T_1}
+\]
 \end{document}
