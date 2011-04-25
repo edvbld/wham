@@ -2,6 +2,7 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{stmaryrd}
+\usepackage{trfrac}
   
 \begin{document}
 \title{Report for Lab Assignment 1, DD2457 Program Semantics and Analysis}
@@ -54,8 +55,8 @@ The following new rules have been added to the various semantics:
 [\text{while}_{ns}^3] \quad \quad & <\texttt{while}\: b \:\texttt{do}\: S, 
 \hat{s}> \rightarrow \hat{s} \\
 [\text{while}_{ns}^4] \quad \quad & 
-\frac{<S,s> \rightarrow \hat{s}}{<\texttt{while}\: b \:\texttt{do}\: S, 
-\hat{s}> \rightarrow \hat{s}} \\
+<\texttt{while}\: b \:\texttt{do}\: S, s> \rightarrow \hat{s} 
+\quad \text{if} \: \mathcal{B} \llbracket b \rrbracket s = \bot \\
 [\text{while}_{ns}^5] \quad \quad & 
 \frac{<S,s> \rightarrow s^{'}, <\texttt{while}\: b \: \texttt{do} \: S, s^{'}>
 \rightarrow \hat{s}}
@@ -66,7 +67,7 @@ The following new rules have been added to the various semantics:
 
 \subsection*{AM instructions}
 \begin{align*}
-\text{DIV}\: |\: \text{TRY}\:(c,c)\: |\: \text{CATCH}
+\text{DIV}\: |\: \text{TRY}\:(c,c)\: |\: \text{CATCH}\:(c)
 \end{align*}
 
 \subsection*{AM Stuctural Operational Rules}
@@ -79,10 +80,16 @@ The following new rules have been added to the various semantics:
 \text{if} \; n_1, n_2 \in \mathbb{Z}, n_2 = 0 \\
 <\text{TRY}\:(c_1, c_2):c, e, s> \: &\triangleright 
 <c_1:\text{CATCH}\:(c_2):c, e, s>& \\
-<\text{CATCH}\:(c_1):c, e, s> &\triangleright <c, e, s>& \\
-<\text{CATCH}\:(c_1):c, e, \hat{s}> &\triangleright <c_1:c, e, s>& \\
-<\text{\_}:c, e, \hat{s}> &\triangleright <c, e, \hat{s}>&
+<\text{CATCH}\:(c_1):c, e, s>\: &\triangleright <c, e, s>& \\
+<\text{CATCH}\:(c_1):c, e, \hat{s}>\: &\triangleright <c_1:c, e, s>& \\
+<c_1:c, e, \hat{s}>\: &\triangleright <c, e, \hat{s}>&
 \end{align*}
 \endgroup
+
+\subsection*{Derivation tree}
+\[
+\trfrac[\(\text{comp}_{ns}\)]{x := 7}{x := 7; \textbf{try}\: x := x - 7; 
+x := 7 / x; x := x + 7 \: \textbf{catch}\: x := x - 7}
+\]
 
 \end{document}
