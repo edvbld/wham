@@ -42,7 +42,7 @@ debug exps vars = impl (exps, [], (toState vars))
         impl c = do case step c of 
                         Left err -> print $ "Error: " ++ err
                         Right c' -> do print c'
-                                       _ <- getLine
+                                       {-_ <- getLine-}
                                        impl c'
 
 data Flag = Debug | State [(String, Integer)] deriving (Eq, Show, Ord)

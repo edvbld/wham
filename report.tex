@@ -3,6 +3,7 @@
 \usepackage{amsfonts}
 \usepackage{stmaryrd}
 \usepackage{trfrac}
+%\usepackage{pdfpages}
 
 \newenvironment{changemargin}[2]{%
 \begin{list}{}{%
@@ -124,4 +125,13 @@ x := x - 7, s_0> \rightarrow s_1}
 {<x := 7 / x; x := x + 7, s_3> \rightarrow \hat{s}_3}
 }{T_1}
 \]
+
+\subsection*{Execution of sample}
+\begin{changemargin}{-3.4cm}{\rightmargin}
+\noindent
+\tiny
+\input{trycatch.output}
+\normalsize
+%\includepdf[pages=-]{trycatch.pdf}
+\end{changemargin}
 \end{document}
