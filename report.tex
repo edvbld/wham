@@ -105,7 +105,7 @@ The following new rules have been added to the various semantics:
 \trfrac[\(\text{try}^3_{ns}\)]{
 \trfrac[\(\text{comp}_{ns}\)]{T_1}
 {<x := x - 7; x := 7 / x; x := x + 7, s_2> \rightarrow \hat{s}_3} 
-\trfrac[\(\text{ass}_{ns}\)]{T_2}
+\trfrac[\(\text{ass}_{ns}\)]{s_3[x \mapsto s_3(x) - 7\:]}
 {<x := x - 7, \hat{s}_3> \rightarrow s_1}}
 {<\textbf{try}\: x := x - 7; x := 7 / x; x := x + 7 \: \textbf{catch}\:
 x := x - 7, s_2> \rightarrow s_1}}
@@ -118,7 +118,9 @@ x := x - 7, s_0> \rightarrow s_1}
 \trfrac[\(\text{ass}_{ns}\)]{s_2[x \mapsto s_2(x) - 7]}
 {<x := x - 7, s_2> \rightarrow s_3}
 \trfrac[\(\text{comp}_{ns}\)]{
-<x := 7/x, s_3> \rightarrow \hat{s_3} <x := x + 7, \hat{s_3}> \rightarrow \hat{s}_3}
+\trfrac[\(\text{ass}^3_{ns}\)]{\hat{s}_3 = (s_3, \bot)}
+{<x := 7/x, s_3> \rightarrow \hat{s}_3}
+<x := x + 7, \hat{s_3}> \rightarrow \hat{s}_3}
 {<x := 7 / x; x := x + 7, s_3> \rightarrow \hat{s}_3}
 }{T_1}
 \]
