@@ -21,6 +21,7 @@
 \author{Erik Helin}
 \date{\today}
 \maketitle
+\newpage
 
 \section*{New Rules}
 The following new rules have been added to the various semantics:
@@ -77,9 +78,69 @@ The following new rules have been added to the various semantics:
 \end{align*}
 \endgroup
 
+\subsection*{Arithmetic expressions}
+\begin{align*}
+\mathcal{A}\llbracket a_1 / a_2 \rrbracket(s) &= \mathcal{A}\llbracket a_1
+\rrbracket(s) / \mathcal{A}\llbracket a_2 \rrbracket(s)\:& \text{if} \:
+\mathcal{A}\llbracket a_2 \rrbracket(s) \neq 0 \\
+\mathcal{A}\llbracket a_1 / a_2 \rrbracket(s) &= \bot\:& \text{if} \:
+\mathcal{A}\llbracket a_2 \rrbracket(s) = 0 \\
+\end{align*}
+
+\subsection*{Boolean expressions}
+\begin{align*} 
+\mathcal{B}\llbracket a_1 = a_ 2 \rrbracket(s) &=
+    \begin{cases}
+        \textbf{tt} & \text{if } \mathcal{A}\llbracket a_1 \rrbracket(s) =
+        \mathcal{A}\llbracket a_2 \rrbracket(s) \\
+        \textbf{ff} & \text{if } \mathcal{A}\llbracket a_1 \rrbracket(s) \neq
+        \mathcal{A}\llbracket a_2 \rrbracket(s)  \\
+        \bot & \text{if } \mathcal{A}\llbracket a_1 \rrbracket(s) = \bot
+                          \text{ or }
+                          \mathcal{A} \llbracket a_2 \rrbracket (s) = \bot
+    \end{cases} \\
+\mathcal{B}\llbracket a_1 \leq a_2 \rrbracket(s) &= 
+    \begin{cases}
+        \textbf{tt} & \text{if } \mathcal{A}\llbracket a_1 \rrbracket(s) \leq
+        \mathcal{A}\llbracket a_2 \rrbracket(s) \\
+        \textbf{ff} & \text{if } \mathcal{A}\llbracket a_1 \rrbracket(s) >
+        \mathcal{A}\llbracket a_2 \rrbracket(s)  \\
+        \bot & \text{if } \mathcal{A}\llbracket a_1 \rrbracket(s) = \bot 
+                          \text{ or }
+                          \mathcal{A} \llbracket a_2 \rrbracket (s) = \bot
+    \end{cases} \\
+\mathcal{B}\llbracket \neg\, b \rrbracket(s) &= 
+    \begin{cases}
+        \textbf{tt} & \text{if } \mathcal{B}\llbracket b \rrbracket(s) =
+        \textbf{ff} \\
+        \textbf{ff} & \text{if } \mathcal{B}\llbracket b \rrbracket(s) =
+        \textbf{tt} \\
+        \bot & \text{if }\mathcal{B}\llbracket b \rrbracket(s) = \bot
+    \end{cases} \\
+\mathcal{B}\llbracket b_1 \land b_2 \rrbracket(s) &= 
+    \begin{cases}
+        \textbf{tt} & \text{if } \mathcal{B}\llbracket b_1 \rrbracket(s) =
+        \textbf{tt} \text{ and } \mathcal{B}\llbracket b_2 \rrbracket(s) =
+        \textbf{tt} \\
+        \textbf{ff} & \text{if } \mathcal{B}\llbracket b_1 \rrbracket(s) =
+        \textbf{ff} \text{ or } \mathcal{B}\llbracket b_2 \rrbracket(s) =
+        \textbf{ff} \\
+        \bot & \text{if }\mathcal{B}\llbracket b_1 \rrbracket(s) = \bot
+                         \text{ or }
+                         \mathcal{B}\llbracket b_2 \rrbracket(s) = \bot
+    \end{cases}
+\end{align*}
+
 \subsection*{AM instructions}
 \begin{align*}
-\text{DIV}\: |\: \text{TRY}\:(c,c)\: |\: \text{CATCH}\:(c)
+\text{DIV}\: |\: \text{TRY}\:(c_1,c_2)\: |\: \text{CATCH}\:(c)
+\end{align*}
+
+\subsection*{AM translations}
+\begin{align*}
+\mathcal{CA}\llbracket a_1 / a_2 \rrbracket = 
+    \mathcal{CA}\llbracket a_2 \rrbracket:
+    \mathcal{CA}\llbracket a_1 \rrbracket:\textsc{DIV}
 \end{align*}
 
 \subsection*{AM Stuctural Operational Rules}
@@ -136,8 +197,9 @@ x := x - 7, s_0> \rightarrow s_1}
 \end{changemargin}
 
 \subsection*{Argument of correctness}
-The modified version of lemma 4.18 still holds, but the lemma have to be
-adjusted a little bit to take the extended states into account:
+The modified version of lemma 4.18 used in class still holds, 
+but the lemma have to be adjusted a little bit to take the 
+extended states into account:
 
 {\bf Lemma 4.18*} 
 \begin{align*}
@@ -148,4 +210,27 @@ adjusted a little bit to take the extended states into account:
 \end{align*}
 
 {\bf Proof}
+The proof is the same as before (the one we did in class), 
+but a new case is added for division
+\begin{align*}
+[a \equiv a_1 / a_2]&\:\:\:\:\:\: \langle \mathcal{CA}\llbracket a_1 / a_2 \rrbracket:c,
+e, s \rangle \\
+&= \langle \mathcal{CA}\llbracket a_2 \rrbracket:\mathcal{CA} \llbracket a_1
+\rrbracket:\textsc{DIV}:c, e, s\rangle & \{\text{def}\:\mathcal{CA}\} \\
+&\triangleright^+ \langle \mathcal{CA} \llbracket a_1 \rrbracket:\textsc{DIV}:c,
+\mathcal{A}\llbracket a_2 \rrbracket(s):e, s \rangle & \{\text{ind. hyp.}\} \\
+&\triangleright^+ \langle \textsc{DIV}:c,
+\mathcal{A}\llbracket a_1 \rrbracket(s):\mathcal{A}\llbracket a_2 \rrbracket(s):e, 
+s \rangle & \{\text{ind. hyp.}\} \\
+&\triangleright \langle c, (\mathcal{A}\llbracket a_1 \rrbracket(s) /
+\mathcal{A}\llbracket a_2 \rrbracket(s)):e, s \rangle & \{\text{def}\: \triangleright\} \\
+\end{align*}
+
+Since lemma 4.18* holds, lemma 4.19 holds since \(\mathcal{CB}\) in unchanged  and since both functions
+\(\mathcal{S}_{ns}\) and \(\mathcal{S}_{am}\) now has type \(\textbf{Stm } \rightarrow (\textbf{ EState }
+\hookrightarrow \textbf{ EState})\), 
+theorem 4.20 still holds for the original semantic of \textbf{While}. In order
+for the proof to hold for the extended version \textbf{While} with the {\bf
+try} \(S_1\) {\bf catch} \(S_2\) rule added, a proof for that rules has to be
+added to proof of theorem 4.20.
 \end{document}
