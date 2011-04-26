@@ -1,0 +1,12 @@
+x := 0;
+y := 0;
+try
+    try
+        x := 0;
+        y := 5 / x
+    catch
+        x := 5;
+        y := 0;
+        x := 5 / y
+catch
+    y := x + x

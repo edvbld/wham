@@ -3,13 +3,11 @@
 \usepackage{amsfonts}
 \usepackage{stmaryrd}
 \usepackage{trfrac}
-%\usepackage{pdfpages}
 
 \newenvironment{changemargin}[2]{%
 \begin{list}{}{%
 \setlength{\topsep}{0pt}%
-\setlength{\leftmargin}{#1}%
-\setlength{\rightmargin}{#2}%
+\setlength{\leftmargin}{#1}% \setlength{\rightmargin}{#2}%
 \setlength{\listparindent}{\parindent}%
 \setlength{\itemindent}{\parindent}%
 \setlength{\parsep}{\parskip}%
@@ -143,7 +141,7 @@ The following new rules have been added to the various semantics:
     \mathcal{CA}\llbracket a_1 \rrbracket:\textsc{DIV}
 \end{align*}
 
-\subsection*{AM Stuctural Operational Rules}
+\subsection*{AM Structural Operational Rules}
 \begingroup
 \addtolength{\jot}{.5em}
 \begin{align*}
@@ -160,6 +158,10 @@ The following new rules have been added to the various semantics:
 \endgroup
 
 \subsection*{Derivation tree}
+Here follows the derivation tree of the program
+\begin{verbatim}
+x := 7; try x := x - 7; x := 7 / x; x := x + 7 catch x := x - 7
+\end{verbatim}
 \begin{changemargin}{-2.5cm}{\rightmargin}
 \[
 \trfrac[\(\text{comp}_{ns}\)]{
@@ -187,13 +189,26 @@ x := x - 7, s_0> \rightarrow s_1}
 }{T_1}
 \]
 
+where
+\begin{align*}
+s_2 &= (s_0[x \mapsto 7], \top) \\
+s_3 &= (s_2[x \mapsto s_2(x) - 7], \top) = (s_0[x \mapsto 0], \top) \\
+\hat{s}_3 &= (s_3, \bot) = (s_0[x \mapsto 0], \bot) \\
+s_1 &= (s_3[x \mapsto s_3(x) - 7], \top) = (s_0[x \mapsto s_0(x) - 7], \top) =
+(s_0[x \mapsto -7], \top)
+\end{align*}
+
 \subsection*{Execution of sample}
+Here follows the execution of the program from an arbitrary 
+state \(s\).
+\begin{verbatim}
+x := 7; try x := x - 7; x := 7 / x; x := x + 7 catch x := x - 7
+\end{verbatim}
 \begin{changemargin}{-3.4cm}{\rightmargin}
 \noindent
 \tiny
 \input{trycatch.output}
 \normalsize
-%\includepdf[pages=-]{trycatch.pdf}
 \end{changemargin}
 
 \subsection*{Argument of correctness}
@@ -213,24 +228,85 @@ extended states into account:
 The proof is the same as before (the one we did in class), 
 but a new case is added for division
 \begin{align*}
-[a \equiv a_1 / a_2]&\:\:\:\:\:\: \langle \mathcal{CA}\llbracket a_1 / a_2 \rrbracket:c,
+[a \equiv a_1 / a_2]&\:\:\:\:\:\: \langle \mathcal{CA}\llbracket a_1 / a_2 
+\rrbracket:c,
 e, s \rangle \\
 &= \langle \mathcal{CA}\llbracket a_2 \rrbracket:\mathcal{CA} \llbracket a_1
 \rrbracket:\textsc{DIV}:c, e, s\rangle & \{\text{def}\:\mathcal{CA}\} \\
 &\triangleright^+ \langle \mathcal{CA} \llbracket a_1 \rrbracket:\textsc{DIV}:c,
 \mathcal{A}\llbracket a_2 \rrbracket(s):e, s \rangle & \{\text{ind. hyp.}\} \\
 &\triangleright^+ \langle \textsc{DIV}:c,
-\mathcal{A}\llbracket a_1 \rrbracket(s):\mathcal{A}\llbracket a_2 \rrbracket(s):e, 
+\mathcal{A}\llbracket a_1 \rrbracket(s):\mathcal{A}\llbracket a_2 
+\rrbracket(s):e, 
 s \rangle & \{\text{ind. hyp.}\} \\
 &\triangleright \langle c, (\mathcal{A}\llbracket a_1 \rrbracket(s) /
-\mathcal{A}\llbracket a_2 \rrbracket(s)):e, s \rangle & \{\text{def}\: \triangleright\} \\
+\mathcal{A}\llbracket a_2 \rrbracket(s)):e, s \rangle & \{\text{def}\: 
+\triangleright\} \\
 \end{align*}
 
-Since lemma 4.18* holds, lemma 4.19 holds since \(\mathcal{CB}\) in unchanged  and since both functions
-\(\mathcal{S}_{ns}\) and \(\mathcal{S}_{am}\) now has type \(\textbf{Stm } \rightarrow (\textbf{ EState }
+Since lemma 4.18* holds, lemma 4.19 holds since \(\mathcal{CB}\) in unchanged  
+and since both 
+\(\mathcal{S}_{ns}\) and \(\mathcal{S}_{am}\) now has type \(\textbf{Stm } 
+\rightarrow (\textbf{ EState }
 \hookrightarrow \textbf{ EState})\), 
 theorem 4.20 still holds for the original semantic of \textbf{While}. In order
 for the proof to hold for the extended version \textbf{While} with the {\bf
-try} \(S_1\) {\bf catch} \(S_2\) rule added, a proof for that rules has to be
-added to proof of theorem 4.20.
+try} \(S_1\) {\bf catch} \(S_2\) statement added, 
+a proof for that rule has to be added to the proof of theorem 4.20.
+
+\subsection*{Examples}
+The implementation was tested with all the examples in the folder 
+\texttt{/info/semant11/lab1/samples} all well as the following examples.
+\subsubsection*{Example 1}
+\begin{description}
+\item[Description] Exception in the boolean condition of an if statement 
+\item[Result] \((s[x \mapsto 0], \bot)\) for all initial states \(s\)
+\item[Code]
+\begin{verbatim}
+x := 0; if 7 / 0 <= 7 then x := 1 else x := 2; x := x - 2 
+\end{verbatim}
+\end{description}
+
+\subsubsection*{Example 2}
+\begin{description}
+\item[Description] Exception in the boolean condition of a while loop
+\item[Result] \((s[x \mapsto 1], \bot)\) for all initial states \(s\)
+\item[Code]
+\begin{verbatim}
+x := 1; while x <= x / 0 do x := x + 1; x := x - 1
+\end{verbatim}
+\end{description}
+
+\subsubsection*{Example 3}
+\begin{description}
+\item[Description] An exception before a try/catch statement
+\item[Result] \((s, \bot)\) for all initial states \(s\)
+\item[Code]
+\begin{verbatim}
+x := 7 / 0; try x := 1 catch x := 2; x := 3
+\end{verbatim}
+\end{description}
+
+\subsubsection*{Example 4}
+\begin{description}
+\item[Description] An exception in a catch statement of a nested try/catch
+statement
+\item[Result] \((s[x \mapsto 5][y \mapsto 10], \top)\) for all initial states
+\(s\)
+\item[Code] \hfill
+\begin{verbatim}
+x := 0;
+y := 0;
+try
+    try
+        x := 0;
+        y := 5 / x
+    catch
+        x := 5;
+        y := 0;
+        x := 5 / y
+catch
+    y := x + x
+\end{verbatim}
+\end{description}
 \end{document}
