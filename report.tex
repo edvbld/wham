@@ -134,4 +134,18 @@ x := x - 7, s_0> \rightarrow s_1}
 \normalsize
 %\includepdf[pages=-]{trycatch.pdf}
 \end{changemargin}
+
+\subsection*{Argument of correctness}
+The modified version of lemma 4.18 still holds, but the lemma have to be
+adjusted a little bit to take the extended states into account:
+
+{\bf Lemma 4.18*} 
+\begin{align*}
+\forall a \in \text{AExp}.\forall c \in \text{Code}.\forall e \in \text{Stack}.
+\forall s \in \text{EState}. \\
+\langle\mathcal{CA}\llbracket a \rrbracket:c, e, s \rangle \triangleright^+ 
+\langle c, \mathcal{A}\llbracket a \rrbracket:e, s \rangle
+\end{align*}
+
+{\bf Proof}
 \end{document}
