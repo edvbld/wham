@@ -12,6 +12,7 @@ import Translator
 
 data StackElement = Integer Integer 
                   | Bool Bool 
+                  | Bottom
                     deriving (Show)
 type Stack = [StackElement]
 data StateMode = Normal 
@@ -54,7 +55,7 @@ istep (MULT:exps) (Integer a:Integer b:stack) state@(_, Normal) =
         where stack' = Integer (a*b):stack
 istep (DIV:exps) (Integer a:Integer b:stack) (state, Normal) = 
     if b == 0
-        then Right (exps, stack, (state, Exception))
+        then Right (exps, Bottom:stack, (state, Exception))
         else Right (exps, stack', (state, Normal))
         where
             stack' = Integer (div a b):stack
@@ -84,7 +85,7 @@ istep (TRY s1 s2:exps) stack state@(_, Normal) =
     Right (s1 ++ (CATCH s2):exps, stack, state)
 istep (CATCH _:exps) stack state@(_, Normal) =
     Right (exps, stack, state)
-istep (CATCH s:exps) stack (state, Exception) =
+istep (CATCH s:exps) (Bottom:stack) (state, Exception) =
     Right ((s ++ exps), stack, (state, Normal))
 istep (_:exps) stack state@(_, Exception) =
     Right (exps, stack, state)
