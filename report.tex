@@ -13,6 +13,15 @@
 \setlength{\parsep}{\parskip}%
 }%
 \item[]}{\end{list}}
+
+\newcommand{\SExp}[2]{\mathcal{#1}\llbracket #2 \rrbracket}
+\newcommand{\AExp}[2]{\SExp{A}{#1}(#2)}
+\newcommand{\BExp}[2]{\SExp{B}{#1}(#2)}
+\newcommand{\AMIns}[1]{\textsc{#1}}
+\newcommand{\AMConf}[3]{\langle #1, #2, #3 \rangle}
+\newcommand{\AMArrow}{\: &\triangleright&\:}
+\newcommand{\NSConf}[2]{\langle #1, #2 \rangle}
+\newcommand{\NSRule}[5]{[\text{#1}_{ns}^{#2}] \quad \quad & \NSConf{#3}{#4} \rightarrow #5}
   
 \begin{document}
 \title{Report for Lab Assignment 1, DD2457 Program Semantics and Analysis}
@@ -27,8 +36,7 @@ The following new rules have been added to the various semantics:
 \begingroup
 \addtolength{\jot}{.5em}
 \begin{align*}
-[\text{try}_{ns}^1] \quad \quad &
-<\texttt{try}\: S_1 \: \texttt{catch}\: S_2, \hat{s}> \rightarrow \hat{s} \\
+\NSRule{try}{1}{\texttt{try } S_1 \texttt{ catch } S_2}{\hat{s}}{\hat{s}} \\
 [\text{try}_{ns}^2] \quad \quad &
 \frac{<S_1,s> \rightarrow s^{'}}
      {<\texttt{try}\: S_1 \: \texttt{catch} \: S_2, s> \rightarrow s^{'}}  \\
@@ -78,24 +86,28 @@ The following new rules have been added to the various semantics:
 
 \subsection*{Arithmetic expressions}
 \begin{align*}
-\mathcal{A}\llbracket a_1 / a_2 \rrbracket(s) &= \mathcal{A}\llbracket a_1
-\rrbracket(s) / \mathcal{A}\llbracket a_2 \rrbracket(s)\:& \text{if} \:
+&\mathcal{A}\llbracket a_1 / a_2 \rrbracket(s) &=&\: \mathcal{A}\llbracket a_1
+\rrbracket(s) / \mathcal{A}\llbracket a_2 \rrbracket(s)& &\text{ if }
 \mathcal{A}\llbracket a_2 \rrbracket(s) \neq 0 \\
-\mathcal{A}\llbracket a_1 / a_2 \rrbracket(s) &= \bot\:& \text{if} \:
-\mathcal{A}\llbracket a_2 \rrbracket(s) = 0 \\
+&\AExp{a_1 / a_2}{s} &=&\: \bot& &\text{ if } 
+\AExp{a_2}{s} = 0 \text{ or } \AExp{a_1}{s} = \bot 
+\text{ or } \AExp{a_2}{s} = \bot \\
+&\AExp{a_1 + a_2}{s} &=&\: \bot &\: &\text{ if } \AExp{a_1}{s} = \bot 
+\text{ or } \AExp{a_2}{s} = \bot \\
+&\AExp{a_1 - a_2}{s} &=&\: \bot &\: &\text{ if } \AExp{a_1}{s} = \bot 
+\text{ or } \AExp{a_2}{s} = \bot \\
+&\AExp{a_1 * a_2}{s} &=&\: \bot &\: &\text{ if } \AExp{a_1}{s} = \bot 
+\text{ or } \AExp{a_2}{s} = \bot \\
 \end{align*}
 
 \subsection*{Boolean expressions}
 \begin{align*} 
-\mathcal{B}\llbracket a_1 = a_ 2 \rrbracket(s) &=
+\BExp{a_1 = a_ 2}{s} &=
     \begin{cases}
-        \textbf{tt} & \text{if } \mathcal{A}\llbracket a_1 \rrbracket(s) =
-        \mathcal{A}\llbracket a_2 \rrbracket(s) \\
-        \textbf{ff} & \text{if } \mathcal{A}\llbracket a_1 \rrbracket(s) \neq
-        \mathcal{A}\llbracket a_2 \rrbracket(s)  \\
-        \bot & \text{if } \mathcal{A}\llbracket a_1 \rrbracket(s) = \bot
-                          \text{ or }
-                          \mathcal{A} \llbracket a_2 \rrbracket (s) = \bot
+        \textbf{tt} & \text{if } \AExp{a_1}{s} = \AExp{a_2}{s} \\
+        \textbf{ff} & \text{if } \AExp{a_1}{s} \neq \AExp{a_2}{s} \\
+        \bot & \text{if } \AExp{a_1}{s} = \bot \text{ or } 
+                          \AExp{a_2}{s} = \bot \\
     \end{cases} \\
 \mathcal{B}\llbracket a_1 \leq a_2 \rrbracket(s) &= 
     \begin{cases}
@@ -131,29 +143,34 @@ The following new rules have been added to the various semantics:
 
 \subsection*{AM instructions}
 \begin{align*}
-\text{DIV}\: |\: \text{TRY}\:(c_1,c_2)\: |\: \text{CATCH}\:(c)
+\AMIns{div}\: |\: \AMIns{try}\:(c_1,c_2)\: |\: \AMIns{catch}\:(c)
 \end{align*}
 
 \subsection*{AM translations}
 \begin{align*}
-\mathcal{CA}\llbracket a_1 / a_2 \rrbracket = 
-    \mathcal{CA}\llbracket a_2 \rrbracket:
-    \mathcal{CA}\llbracket a_1 \rrbracket:\textsc{DIV}
+\SExp{CA}{a_1 / a_2} &= 
+    \SExp{CA}{a_2}:\SExp{CA}{a_1}:\AMIns{div} \\
+\SExp{CS}{\texttt{try } S_1  \texttt{ catch } S_2} &= 
+    \AMIns{try}(\SExp{CS}{S_1}, \SExp{CS}{S_2})
 \end{align*}
 
 \subsection*{AM Structural Operational Rules}
 \begingroup
 \addtolength{\jot}{.5em}
 \begin{align*}
-<\text{DIV}:c, n_1:n_2:e, s> \: &\triangleright <c, (n_1 / n_2):e, s>& \quad 
-\text{if} \; n_1, n_2 \in \mathbb{Z}, n_2 \neq 0 \\
-<\text{DIV}:c, n_1:n_2:e, s> \: &\triangleright <c, e, \hat{s}>& \quad
-\text{if} \; n_1, n_2 \in \mathbb{Z}, n_2 = 0 \\
-<\text{TRY}\:(c_1, c_2):c, e, s> \: &\triangleright 
-<c_1:\text{CATCH}\:(c_2):c, e, s>& \\
-<\text{CATCH}\:(c_1):c, e, s>\: &\triangleright <c, e, s>& \\
-<\text{CATCH}\:(c_1):c, e, \hat{s}>\: &\triangleright <c_1:c, e, s>& \\
-<c_1:c, e, \hat{s}>\: &\triangleright <c, e, \hat{s}>&
+&\AMConf{\AMIns{div}:c}{n_1:n_2:e}{s} \AMArrow
+\AMConf{c}{(n_1 / n_2):e}{s}& \text{ if } 
+n_1, n_2 \in \mathbb{Z}, n_2 \neq 0 \\
+&\AMConf{\AMIns{div}:c}{n_1:n_2:e}{s} \AMArrow
+\AMConf{c}{\bot:e}{\hat{s}}& \text{ if }
+n_1, n_2 \in \mathbb{Z}, n_2 = 0 \\
+&\AMConf{\AMIns{try}(c_1, c_2):c}{e}{s} \AMArrow
+\AMConf{c_1:\AMIns{catch}(c_2):c}{e}{s}& \\
+&\AMConf{\AMIns{catch}(c_1):c}{e}{s} \AMArrow
+\AMConf{c}{e}{s}& \\
+&\AMConf{\AMIns{catch}(c_1):c}{\bot:e}{\hat{s}} \AMArrow
+\AMConf{c_1:c}{e}{s}& \\
+&\AMConf{c_1:c}{e}{\hat{s}} \AMArrow \AMConf{c}{e}{\hat{s}}
 \end{align*}
 \endgroup
 
@@ -204,12 +221,80 @@ state \(s\).
 \begin{verbatim}
 x := 7; try x := x - 7; x := 7 / x; x := x + 7 catch x := x - 7
 \end{verbatim}
-\begin{changemargin}{-3.4cm}{\rightmargin}
-\noindent
-\tiny
-\input{trycatch.output}
-\normalsize
+First, the program is translated
+\begin{changemargin}{-2.9cm}{\rightmargin}
+\begin{align*}
+&\SExp{CS}{x := 7; \textbf{try } x := x - 7; x := 7 / x; x := x + 7 
+\textbf{ catch } x := x - 7}  \\
+=\: &\SExp{CS}{x := 7}:\SExp{CS}{\textbf{try } x := x - 7; x := 7 / x; x := x + 7 
+\textbf{ catch } x := x - 7} \\
+=\: &\SExp{CA}{7}:\AMIns{store-x}:\SExp{CS}{\textbf{try } x := x - 7; x := 7 / x; x := x + 7 
+\textbf{ catch } x := x - 7} \\
+=\: &\AMIns{push-7}:\AMIns{store-x}:\SExp{CS}{\textbf{try } x := x - 7; x := 7 / x; x := x + 7 
+\textbf{ catch } x := x - 7}  \\
+=\: &\AMIns{push-7}:\AMIns{store-x}:
+\AMIns{try}(\SExp{CS}{x := x - 7; x := 7 / x; x := x + 7}, 
+\SExp{CS}{x := x - 7}) \\
+=\: &\AMIns{push-7}:\AMIns{store-x}:
+\AMIns{try}(\SExp{CS}{x := x - 7}:\SExp{CS}{x := 7 / x; x := x + 7},
+\SExp{CS}{x := x - 7}) \\
+=\: &\AMIns{push-7}:\AMIns{store-x}:
+\AMIns{try}(\SExp{CA}{x - 7}:\AMIns{store-x}:\SExp{CS}{x := 7 / x; x := x + 7},
+\SExp{CS}{x := x - 7}) \\
+=\: &\AMIns{push-7}:\AMIns{store-x}:
+\AMIns{try}(\SExp{CA}{7}:\SExp{CA}{x}:\AMIns{sub}:\AMIns{store-x}:\SExp{CS}{x := 7 / x; x := x + 7},
+\SExp{CS}{x := x - 7}) \\
+=\: &\AMIns{push-7}:\AMIns{store-x}:
+\AMIns{try}(\AMIns{push-7}:\SExp{CA}{x}:\AMIns{sub}:\AMIns{store-x}:\SExp{CS}{x := 7 / x; x := x + 7},
+\SExp{CS}{x := x - 7}) \\
+=\: &\AMIns{push-7}:\AMIns{store-x}:
+\AMIns{try}(\AMIns{push-7}:\AMIns{fetch-x}:\AMIns{sub}:\AMIns{store-x}:\SExp{CS}{x := 7 / x; x := x + 7},
+\SExp{CS}{x := x - 7}) \\
+=\: &\AMIns{push-7}:\AMIns{store-x}:
+\AMIns{try}(\AMIns{push-7}:\AMIns{fetch-x}:\AMIns{sub}:\AMIns{store-x}:\SExp{CS}{x
+:= 7 / x}:\SExp{CS}{x := x + 7},
+\SExp{CS}{x := x - 7}) \\
+=\: &\AMIns{push-7}:\AMIns{store-x}: \\
+&\AMIns{try}(\AMIns{push-7}:\AMIns{fetch-x}:\AMIns{sub}:\AMIns{store-x}:
+\SExp{CA}{7 / x}:\AMIns{store-x}:\SExp{CS}{x := x + 7},
+\SExp{CS}{x := x - 7}) \\
+=\: &\AMIns{push-7}:\AMIns{store-x}: \\
+&\AMIns{try}(\AMIns{push-7}:\AMIns{fetch-x}:\AMIns{sub}:\AMIns{store-x}:
+\SExp{CA}{x}:\SExp{CA}{7}:\AMIns{div}:\AMIns{store-x}:\SExp{CS}{x := x + 7},
+\SExp{CS}{x := x - 7}) \\
+=\: &\AMIns{push-7}:\AMIns{store-x}: \\
+&\AMIns{try}(\AMIns{push-7}:\AMIns{fetch-x}:\AMIns{sub}:\AMIns{store-x}:
+\SExp{CA}{x}:\AMIns{push-7}:\AMIns{div}:\AMIns{store-x}:\SExp{CS}{x := x + 7},
+\SExp{CS}{x := x - 7}) \\
+=\: &\AMIns{push-7}:\AMIns{store-x}: \\
+&\AMIns{try}(\AMIns{push-7}:\AMIns{fetch-x}:\AMIns{sub}:\AMIns{store-x}:
+\AMIns{fetch-x}:\AMIns{push-7}:\AMIns{div}:\AMIns{store-x}:\SExp{CS}{x := x + 7},
+\SExp{CS}{x := x - 7}) \\
+=\: &\AMIns{push-7}:\AMIns{store-x}: \\
+&\AMIns{try}(\AMIns{push-7}:\AMIns{fetch-x}:\AMIns{sub}:\AMIns{store-x}:
+\AMIns{fetch-x}:\AMIns{push-7}:\AMIns{div}:\AMIns{store-x}:
+\SExp{CA}{x + 7}:\AMIns{store-x}, \\
+& \quad \quad \: \SExp{CS}{x := x - 7}) \\
+=\: &\AMIns{push-7}:\AMIns{store-x}: \\
+&\AMIns{try}(\AMIns{push-7}:\AMIns{fetch-x}:\AMIns{sub}:\AMIns{store-x}:
+\AMIns{fetch-x}:\AMIns{push-7}:\AMIns{div}:\AMIns{store-x}:
+\AMIns{push-7}:\AMIns{fetch-x}:\AMIns{add}:\AMIns{store-x}, \\
+& \quad \quad \: \SExp{CS}{x := x - 7}) \\
+=\: &\AMIns{push-7}:\AMIns{store-x}: \\
+&\AMIns{try}(\AMIns{push-7}:\AMIns{fetch-x}:\AMIns{sub}:\AMIns{store-x}:
+\AMIns{fetch-x}:\AMIns{push-7}:\AMIns{div}:\AMIns{store-x}:
+\AMIns{push-7}:\AMIns{fetch-x}:\AMIns{add}:\AMIns{store-x}, \\
+& \quad \quad \: \SExp{CA}{x - 7}:\AMIns{store-x}) \\
+=\: &\AMIns{push-7}:\AMIns{store-x}: \\
+&\AMIns{try}(\AMIns{push-7}:\AMIns{fetch-x}:\AMIns{sub}:\AMIns{store-x}:
+\AMIns{fetch-x}:\AMIns{push-7}:\AMIns{div}:\AMIns{store-x}:
+\AMIns{push-7}:\AMIns{fetch-x}:\AMIns{add}:\AMIns{store-x}, \\
+& \quad \quad \: \AMIns{push-7}:\AMIns{fetch-x}:\AMIns{sub}:\AMIns{store-x}) \\
+\end{align*}
 \end{changemargin}
+
+Then the translated program is executed
+
 
 \subsection*{Argument of correctness}
 The modified version of lemma 4.18 used in class still holds, 
