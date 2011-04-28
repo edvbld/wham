@@ -21,7 +21,10 @@
 \newcommand{\AMConf}[3]{\langle #1, #2, #3 \rangle}
 \newcommand{\AMArrow}{\: &\triangleright&\:}
 \newcommand{\NSConf}[2]{\langle #1, #2 \rangle}
-\newcommand{\NSRule}[5]{[\text{#1}_{ns}^{#2}] \quad \quad & \NSConf{#3}{#4} \rightarrow #5}
+\newcommand{\NSProd}[3]{\NSConf{#1}{#2} \rightarrow #3}
+\newcommand{\NSRule}[3]{[\text{#1}_{ns}^{#2}] \quad \quad & #3}
+\newcommand{\tdots}{\text{\dots}}
+\newcommand{\smap}[2]{[#1 \mapsto \textbf{#2}]}
   
 \begin{document}
 \title{Report for Lab Assignment 1, DD2457 Program Semantics and Analysis}
@@ -36,50 +39,49 @@ The following new rules have been added to the various semantics:
 \begingroup
 \addtolength{\jot}{.5em}
 \begin{align*}
-\NSRule{try}{1}{\texttt{try } S_1 \texttt{ catch } S_2}{\hat{s}}{\hat{s}} \\
-[\text{try}_{ns}^2] \quad \quad &
-\frac{<S_1,s> \rightarrow s^{'}}
-     {<\texttt{try}\: S_1 \: \texttt{catch} \: S_2, s> \rightarrow s^{'}}  \\
+\NSRule{try}{1}{\NSProd{\texttt{try } S_1 \texttt{ catch } S_2}{\hat{s}}{\hat{s}}} \\
+\NSRule{try}{2}{\frac{\NSProd{S_1}{s}{s^{'}}}
+                     {\NSProd{\texttt{try } S_1 \texttt{ catch } S_2}{s}{s^{'}}}} \\
 [\text{try}_{ns}^3] \quad \quad &
-\frac{<S_1,s> \rightarrow \hat{s}, \: <S_2, \hat{s}> \rightarrow s^{'}}
-     {<\texttt{try}\: S_1 \: \texttt{catch} \: S_2, s> \rightarrow s^{'}} \\
+\frac{\langle S_1,s\rangle  \rightarrow \hat{s}, \: \langle S_2, \hat{s}\rangle  \rightarrow s^{'}}
+     {\langle \texttt{try}\: S_1 \: \texttt{catch} \: S_2, s\rangle  \rightarrow s^{'}} \\
 [\text{ass}_{ns}^2] \quad \quad &
-<x := a, \hat{s}> \rightarrow \hat{s} \\
+\langle x := a, \hat{s}\rangle  \rightarrow \hat{s} \\
 [\text{ass}_{ns}^3] \quad \quad &
-<x := a, s> \rightarrow \hat{s} \quad 
+\langle x := a, s\rangle  \rightarrow \hat{s} \quad 
 \text{if} \: \mathcal{A} \llbracket a \rrbracket s = \bot \\
 [\text{skip}_{ns}^2] \quad \quad &
-<\texttt{skip}, \hat{s}> \rightarrow \hat{s} \\
+\langle \texttt{skip}, \hat{s}\rangle  \rightarrow \hat{s} \\
 [\text{comp}_{ns}^2] \quad \quad &
-<S_1;S_2, \hat{s}> \rightarrow \hat{s} \\
+\langle S_1;S_2, \hat{s}\rangle  \rightarrow \hat{s} \\
 [\text{comp}_{ns}^3] \quad \quad &
-\frac{<S_1, s> \rightarrow \hat{s}}{<S_1;S_2, s> \rightarrow \hat{s}} \\
+\frac{\langle S_1, s\rangle  \rightarrow \hat{s}}{\langle S_1;S_2, s\rangle  \rightarrow \hat{s}} \\
 [\text{comp}_{ns}^4] \quad \quad &
-\frac{<S_1, s> \rightarrow s^{'}, <S_2, s^{'}> \rightarrow \hat{s}}
-{<S_1;S_2, s> \rightarrow \hat{s}} \\
-[\text{if}_{ns}^{\:3}] \quad \quad & <\texttt{if}\:b\: \texttt{then}\:  S_1 \: 
-\texttt{else} \: S_2, \hat{s}> \rightarrow \hat{s} \\
-[\text{if}_{ns}^{\:4}] \quad \quad & \frac{<S_1, s> \rightarrow \hat{s}}
-{ <\texttt{if}\:b\: \texttt{then}\:  S_1 \: \texttt{else} \: S_2, s> 
+\frac{\langle S_1, s\rangle  \rightarrow s^{'}, \langle S_2, s^{'}\rangle  \rightarrow \hat{s}}
+{\langle S_1;S_2, s\rangle  \rightarrow \hat{s}} \\
+[\text{if}_{ns}^{\:3}] \quad \quad & \langle \texttt{if}\:b\: \texttt{then}\:  S_1 \: 
+\texttt{else} \: S_2, \hat{s}\rangle  \rightarrow \hat{s} \\
+[\text{if}_{ns}^{\:4}] \quad \quad & \frac{\langle S_1, s\rangle  \rightarrow \hat{s}}
+{ \langle \texttt{if}\:b\: \texttt{then}\:  S_1 \: \texttt{else} \: S_2, s\rangle  
 \rightarrow \hat{s}} \quad \text{if} \: \mathcal{B} \llbracket b \rrbracket s
 = \textbf{tt}\\
-[\text{if}_{ns}^{\:5}] \quad \quad & \frac{<S_2, s> \rightarrow \hat{s}}
-{ <\texttt{if}\:b\: \texttt{then}\:  S_1 \: \texttt{else} \: S_2, s> 
+[\text{if}_{ns}^{\:5}] \quad \quad & \frac{\langle S_2, s\rangle  \rightarrow \hat{s}}
+{ \langle \texttt{if}\:b\: \texttt{then}\:  S_1 \: \texttt{else} \: S_2, s\rangle  
 \rightarrow \hat{s}} \quad \text{if} \: \mathcal{B} \llbracket b \rrbracket s
 = \textbf{ff}\\
-[\text{if}_{ns}^{\:6}] \quad \quad & <\texttt{if}\:b\: \texttt{then}\:  S_1 \: 
-\texttt{else} \: S_2, s> \rightarrow \hat{s} \quad 
+[\text{if}_{ns}^{\:6}] \quad \quad & \langle \texttt{if}\:b\: \texttt{then}\:  S_1 \: 
+\texttt{else} \: S_2, s\rangle  \rightarrow \hat{s} \quad 
 \text{if} \: \mathcal{B} \llbracket b \rrbracket s
 = \bot \\
-[\text{while}_{ns}^3] \quad \quad & <\texttt{while}\: b \:\texttt{do}\: S, 
-\hat{s}> \rightarrow \hat{s} \\
+[\text{while}_{ns}^3] \quad \quad & \langle \texttt{while}\: b \:\texttt{do}\: S, 
+\hat{s}\rangle  \rightarrow \hat{s} \\
 [\text{while}_{ns}^4] \quad \quad & 
-<\texttt{while}\: b \:\texttt{do}\: S, s> \rightarrow \hat{s} 
+\langle \texttt{while}\: b \:\texttt{do}\: S, s\rangle  \rightarrow \hat{s} 
 \quad \text{if} \: \mathcal{B} \llbracket b \rrbracket s = \bot \\
 [\text{while}_{ns}^5] \quad \quad & 
-\frac{<S,s> \rightarrow s^{'}, <\texttt{while}\: b \: \texttt{do} \: S, s^{'}>
+\frac{\langle S,s\rangle  \rightarrow s^{'}, \langle \texttt{while}\: b \: \texttt{do} \: S, s^{'}\rangle 
 \rightarrow \hat{s}}
-{<\texttt{while}\: b \: \texttt{do}\: S, s> \rightarrow \hat{s}} 
+{\langle \texttt{while}\: b \: \texttt{do}\: S, s\rangle  \rightarrow \hat{s}} 
 \quad \text{if} \: \mathcal{B} \llbracket b \rrbracket s = \textbf{tt} \\
 \end{align*}
 \endgroup
@@ -295,6 +297,80 @@ First, the program is translated
 
 Then the translated program is executed
 
+\begin{align*}
+&\AMConf{\AMIns{push-7}:\AMIns{store-x}:\AMIns{try}(\tdots)}{\epsilon}{s}
+\\
+\triangleright \: &\AMConf{\AMIns{store-x}:\AMIns{try}(\tdots)}{\textbf{7}}{s}
+\\
+\triangleright \: &\AMConf{\AMIns{try}(\tdots)}{\epsilon} {s\smap{x}{7}} \\
+\triangleright \: &
+\AMConf{\AMIns{push-7}:\AMIns{fetch-x}:\AMIns{sub}:\AMIns{store-x}:
+        \tdots:\AMIns{catch}(\AMIns{push-7}:\AMIns{fetch-x}:\AMIns{sub}:
+                             \AMIns{store-x})}{\epsilon}{s\smap{x}{7}} \\
+\triangleright \: &
+\AMConf{\AMIns{fetch-x}:\AMIns{sub}:\AMIns{store-x}:
+        \tdots:\AMIns{catch}(\AMIns{push-7}:\AMIns{fetch-x}:\AMIns{sub}:
+                             \AMIns{store-x})}{\textbf{7}}{s\smap{x}{7}} \\
+\triangleright \: &
+\AMConf{\AMIns{sub}:\AMIns{store-x}:
+        \tdots:\AMIns{catch}(\AMIns{push-7}:\AMIns{fetch-x}:\AMIns{sub}:
+                             \AMIns{store-x})}{\textbf{7}:\textbf{7}}{s\smap{x}{7}} \\
+\triangleright \: &
+\AMConf{\AMIns{store-x}:
+        \tdots:\AMIns{catch}(\AMIns{push-7}:\AMIns{fetch-x}:\AMIns{sub}:
+                             \AMIns{store-x})}{\textbf{0}}{s\smap{x}{7}} \\
+\triangleright \: &
+\AMConf{\AMIns{fetch-x}:\AMIns{push-7}:\AMIns{div}:\AMIns{store-x}:
+\tdots:\AMIns{catch}(\AMIns{push-7}:\AMIns{fetch-x}:\AMIns{sub}:
+                             \AMIns{store-x})}{\epsilon}{s\smap{x}{0}} \\
+\triangleright \: &
+\AMConf{\AMIns{push-7}:\AMIns{div}:\AMIns{store-x}:
+\tdots:\AMIns{catch}(\AMIns{push-7}:\AMIns{fetch-x}:\AMIns{sub}:
+                     \AMIns{store-x})}{\textbf{0}}{s\smap{x}{0}} \\
+\triangleright \: &
+\AMConf{\AMIns{div}:\AMIns{store-x}:
+\tdots:\AMIns{catch}(\AMIns{push-7}:\AMIns{fetch-x}:\AMIns{sub}:
+                     \AMIns{store-x})}{\textbf{7}:\textbf{0}}{s\smap{x}{0}} \\
+\triangleright \: &
+\AMConf{\AMIns{store-x}:
+\tdots:\AMIns{catch}(\AMIns{push-7}:\AMIns{fetch-x}:\AMIns{sub}:
+                     \AMIns{store-x})}{\bot}{\hat{s}\smap{x}{0}} \\
+\triangleright \: &
+\AMConf{\tdots:\AMIns{catch}(\AMIns{push-7}:\AMIns{fetch-x}:\AMIns{sub}:
+                     \AMIns{store-x})}{\bot}{\hat{s}\smap{x}{0}} \\
+\triangleright \: &
+\AMConf{\AMIns{catch}(\AMIns{push-7}:\AMIns{fetch-x}:\AMIns{sub}:
+                     \AMIns{store-x})}{\bot}{\hat{s}\smap{x}{0}} \\
+\triangleright \: &
+\AMConf{\AMIns{push-7}:\AMIns{fetch-x}:\AMIns{sub}:
+                     \AMIns{store-x}}{\epsilon}{s\smap{x}{0}} \\
+\triangleright \: &
+\AMConf{\AMIns{fetch-x}:\AMIns{sub}:\AMIns{store-x}}{\textbf{7}}{s\smap{x}{0}} \\
+\triangleright \: &
+\AMConf{\AMIns{sub}:\AMIns{store-x}}{\textbf{0}:\textbf{7}}{s\smap{x}{0}} \\
+\triangleright \: &
+\AMConf{\AMIns{store-x}}{\textbf{-7}}{s\smap{x}{0}} \\
+\triangleright \: &
+\AMConf{\epsilon}{\epsilon}{s\smap{x}{-7}} \\
+\end{align*}
+
+\subsection*{Implementation}
+The programming part of the lab was done in the programming language Haskell. 
+For the parser, the monadic parser combinator library parsec was used.
+The result was four modules:
+\begin{description}
+\item[\texttt{Parser.hs}] containing all the parser code
+\item[\texttt{Translator.hs}] for translating the AST to AM code
+\item[\texttt{Interpreter.hs}] for executing the AM code
+\item[\texttt{Main.hs}] for invoking the program
+\end{description}
+To use the interpreter, run \texttt{./wham <name-of-file>}. To start the 
+program from a used defined state where \(x \mapsto 5\) and \(y \mapsto 10\), 
+run 
+\begin{verbatim} 
+./wham -s '[("x", 5),("y", 10)]' <name-of-file>
+\end{verbatim}
+To print debug output, use the \texttt{-d} flag.
 
 \subsection*{Argument of correctness}
 The modified version of lemma 4.18 used in class still holds, 
@@ -329,15 +405,35 @@ s \rangle & \{\text{ind. hyp.}\} \\
 \triangleright\} \\
 \end{align*}
 
-Since lemma 4.18* holds, lemma 4.19 holds since \(\mathcal{CB}\) in unchanged  
-and since both 
-\(\mathcal{S}_{ns}\) and \(\mathcal{S}_{am}\) now has type \(\textbf{Stm } 
-\rightarrow (\textbf{ EState }
-\hookrightarrow \textbf{ EState})\), 
-theorem 4.20 still holds for the original semantic of \textbf{While}. In order
-for the proof to hold for the extended version \textbf{While} with the {\bf
-try} \(S_1\) {\bf catch} \(S_2\) statement added, 
-a proof for that rule has to be added to the proof of theorem 4.20.
+Lemma 4.19 would have to be adjusted as well to take extended states into
+account.
+
+The biggest change that is required in Lemma 4.21 and Lemma 4.22 is to allow
+the execution of code without requiring an empty stack. Lemma 4.21 would
+have to be changed to
+\begin{align*}
+&\forall S \in Stm.\forall s, s' \in EState. \\
+&\NSProd{S}{s}{s'} \implies \AMConf{\SExp{CS}{S}}{e}{s}
+\triangleright^{*} \AMConf{\epsilon}{e'}{s'}
+\end{align*}
+However, due to Exercise 4.4, the structure of the proof will stay the same.
+One would of course have to add cases for the exceptional states, e.g. when 
+\(\NSProd{S_1;S_2}{s}{\hat{s}}\) due to \(\NSProd{S_1}{s}{\hat{s}}\) and also 
+add a proof for the case when \(S \equiv \textbf{try } S_1 \textbf{ catch }
+S_2\).
+
+Lemma 4.22 would have to be changed to
+\begin{align*}
+&\forall S \in Stm.\forall s, s' \in EState. \\
+&\AMConf{\SExp{CS}{S}}{e}{s} \triangleright^k \AMConf{\epsilon}{e'}{s'} \implies
+\NSProd{S}{s}{s'}
+\end{align*}
+Again, the proof would have to be adjusted for allowing the stack to be
+non-empty when the code is empty. This should not alter the structure of the
+proof too much, once again due to Lemma 4.4. Also cases has to be added 
+for exceptional states and also a case \(S \equiv \textbf{try } S_1 \textbf{ catch }
+S_2\).
+
 
 \subsection*{Examples}
 The implementation was tested with all the examples in the folder 
