@@ -1,40 +1,42 @@
-module Interpreter(evaluate,
-                   step,
-                   toState,
-                   StateMode(..), 
-                   Configuration, 
-                   Stack, 
-                   EState,
-                   StackElement(..)) where
+module Interpreter (
+       evaluate,
+       step,
+       toState,
+       StateMode(..), 
+       Configuration, 
+       Stack, 
+       EState,
+       StackElement(..)) where
 
+import Prelude hiding ((+), (-), (*), (/), (<=), (==), (&&), fromInteger)
 import qualified Data.Map as Map
 import AMDefinitions
 
-data StackElement = Integer Integer
-                  | Bool Bool
-                  | Bottom
-                  deriving (Show)
-type Stack = [StackElement]
+data StackElement a b = Integer a
+                      | Bool b
+                      | Bottom
+                      deriving (Show)
+type Stack a b = [StackElement a b]
 data StateMode = Normal 
                | Exception 
                  deriving (Eq, Ord, Show)
-type State = Map.Map String Integer
-type EState = (State, StateMode)
-type Configuration = ([AMExpression], Stack, EState)
+type State a = Map.Map String a
+type Result a b = Either String (Configuration a b)
+type Configuration a b = ([AMExpression], Stack a b, (State a, StateMode))
 
-evaluate :: Configuration -> Either String Configuration
+evaluate :: (AMNum a, AMBoolean b) => Configuration a b -> Result a b
 evaluate ([], stack, state) = Right ([], stack, state)
 evaluate c = case step c of 
                 Right conf -> evaluate conf
                 Left err -> Left err
 
-step :: Configuration -> Either String Configuration
+step :: (AMNum a, AMBoolean b) => Configuration a b -> Result a b
 step (exps, stack, state) = istep exps stack state
 
-istep :: [AMExpression] -> Stack -> EState -> Either String Configuration
+istep :: (AMNum a, AMBoolean b) => [AMExpression] -> Stack a b -> (State a, StateMode) -> Result a b
 istep [] stack state = Right ([], stack, state)
 istep (PUSH n:exps) stack state@(_, Normal) = 
-    Right (exps, Integer n:stack, state)
+    Right (exps, (Integer (fromInteger n)):stack, state)
 istep (STORE x:exps) (Integer n:stack) (state, Normal) = 
     Right (exps, stack, (state', Normal))
         where state' = update x n state 
@@ -54,15 +56,19 @@ istep (MULT:exps) (Integer a:Integer b:stack) state@(_, Normal) =
     Right (exps, stack', state)
         where stack' = Integer (a*b):stack
 istep (DIV:exps) (Integer a:Integer b:stack) (state, Normal) = 
-    if b == 0
+    if res
         then Right (exps, Bottom:stack, (state, Exception))
         else Right (exps, stack', (state, Normal))
         where
-            stack' = Integer (div a b):stack
+            res' = comp b 0
+            res = toBool res'
+            stack' = Integer (a / b):stack
+            comp :: (AMNum n, AMBoolean m) => n -> Integer -> m
+            comp a' i = a' == fromInteger i
 istep (TRUE:exps) stack state@(_, Normal) = 
-    Right (exps, Bool True:stack, state)
+    Right (exps, Bool (fromBool True):stack, state)
 istep (FALSE:exps) stack state@(_, Normal) = 
-    Right (exps, Bool False:stack, state)
+    Right (exps, Bool (fromBool False):stack, state)
 istep (EQUAL:exps) (Integer a:Integer b:stack) state@(_, Normal) =
     Right (exps, stack', state)
         where stack' = Bool (a == b):stack
@@ -74,10 +80,10 @@ istep (AND:exps) (Bool a:Bool b:stack) state@(_, Normal) =
         where stack' = Bool (a && b):stack
 istep (NEG:exps) (Bool a:stack) state@(_, Normal) =
     Right (exps, stack', state)
-        where stack' = Bool (not a):stack
+        where stack' = Bool (neg a):stack
 istep (BRANCH s1 s2:exps) (Bool b:stack) state@(_, Normal) =
     Right (exps', stack, state)
-        where exps' = if b then s1 ++ exps else s2 ++ exps
+        where exps' = if toBool b then s1 ++ exps else s2 ++ exps
 istep (LOOP b s:exps) stack state@(_, Normal) =
     Right (exps', stack, state)
         where exps' = b ++ [(BRANCH (s ++ [LOOP b s]) [NOOP])] ++ exps
@@ -94,10 +100,10 @@ istep exps stack state = Left $ "Encountered bad configuration: \n" ++
                                 "\tStack\n\t" ++ (show stack) ++
                                 "\tState\n\t" ++ (show state)
 
-toState :: [(String, Integer)] -> EState
+toState :: (AMNum a) => [(String, a)] -> (State a, StateMode)
 toState list = (Map.fromList list, Normal)
 
-update :: String -> Integer -> State -> State
+update :: (AMNum a) => String -> a -> State a -> State a
 update x n s = 
     case Map.member x s of
         True -> Map.update (\_ -> Just n) x s
