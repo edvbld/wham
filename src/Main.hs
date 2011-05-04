@@ -5,6 +5,7 @@ import Data.List (sort)
 import System.Console.GetOpt
 import Parser
 import Translator
+import AMDefinitions
 import Interpreter
 
 main :: IO()

@@ -7,7 +7,8 @@ SRC_DIR=src
 SOURCES=${SRC_DIR}/Main.hs \
 		${SRC_DIR}/Interpreter.hs \
 		${SRC_DIR}/Translator.hs \
-		${SRC_DIR}/Parser.hs
+		${SRC_DIR}/Parser.hs \
+		${SRC_DIR}/AMDefinitions.hs
 
 all: build
 

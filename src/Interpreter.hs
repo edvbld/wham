@@ -8,12 +8,12 @@ module Interpreter(evaluate,
                    StackElement(..)) where
 
 import qualified Data.Map as Map
-import Translator
+import AMDefinitions
 
-data StackElement = Integer Integer 
-                  | Bool Bool 
+data StackElement = Integer Integer
+                  | Bool Bool
                   | Bottom
-                    deriving (Show)
+                  deriving (Show)
 type Stack = [StackElement]
 data StateMode = Normal 
                | Exception 
