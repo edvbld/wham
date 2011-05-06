@@ -5,8 +5,8 @@ import Data.List (sort)
 import System.Console.GetOpt
 import Parser
 import Translator
-import AMDefinitions
-import Interpreter
+import Evaluator
+import Debugger
 
 main :: IO()
 main = do args <- getArgs
@@ -21,32 +21,21 @@ main = do args <- getArgs
 
 eval :: String -> [Flag] -> String -> IO()
 eval fname [] content = run fname content [] False
-eval fname [State s] content = 
-    run fname content (map (\(str,i) -> (str, absInteger i)) s) False
+eval fname [State s] content = run fname content s False
 eval fname [Debug] content = run fname content [] True
-eval fname [Debug, State s] content = 
-    run fname content (map (\(str, i) -> (str, absInteger i)) s) True
+eval fname [Debug, State s] content = run fname content s True
 eval _ _ _ = error $ usageInfo header options
 
-run :: String -> String -> [(String, IntegerExc)] -> Bool -> IO()
+run :: String -> String -> [(String, Integer)] -> Bool -> IO()
 run fname content vars shouldDebug = case parse parser fname content of 
-    Right stmt -> do let exps = translate stmt
+    Right stmt -> do let code = translate stmt
                      if shouldDebug
-                        then debug exps vars
-                        else case evaluate (translate stmt, [], toState vars) of
+                        then debug code vars
+                        else case evaluate code vars of
                                 Left err -> print $ "Error: " ++ err
-                                Right c -> print c
+                                Right (state, mode) -> 
+                                  putStrLn $ (show mode) ++ ": " ++ (show state)
     Left err -> print err
-
-debug :: [AMExpression] -> [(String, IntegerExc)] -> IO()
-debug exps vars = impl (exps, [], (toState vars))
-    where
-        impl ([], _, _) = return ()
-        impl c = do case step c of 
-                        Left err -> print $ "Error: " ++ err
-                        Right c' -> do print c'
-                                       {-_ <- getLine-}
-                                       impl c'
 
 data Flag = Debug | State [(String, Integer)] deriving (Eq, Show, Ord)
 
