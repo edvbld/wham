@@ -21,12 +21,14 @@ main = do args <- getArgs
 
 eval :: String -> [Flag] -> String -> IO()
 eval fname [] content = run fname content [] False
-eval fname [State s] content = run fname content s False
+eval fname [State s] content = 
+    run fname content (map (\(str,i) -> (str, absInteger i)) s) False
 eval fname [Debug] content = run fname content [] True
-eval fname [Debug, State s] content = run fname content s True
+eval fname [Debug, State s] content = 
+    run fname content (map (\(str, i) -> (str, absInteger i)) s) True
 eval _ _ _ = error $ usageInfo header options
 
-run :: String -> String -> [(String, Integer)] -> Bool -> IO()
+run :: String -> String -> [(String, IntegerExc)] -> Bool -> IO()
 run fname content vars shouldDebug = case parse parser fname content of 
     Right stmt -> do let exps = translate stmt
                      if shouldDebug
@@ -36,7 +38,7 @@ run fname content vars shouldDebug = case parse parser fname content of
                                 Right c -> print c
     Left err -> print err
 
-debug :: [AMExpression] -> [(String, Integer)] -> IO()
+debug :: [AMExpression] -> [(String, IntegerExc)] -> IO()
 debug exps vars = impl (exps, [], (toState vars))
     where
         impl ([], _, _) = return ()
