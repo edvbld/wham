@@ -8,8 +8,7 @@ SOURCES=${SRC_DIR}/Main.hs \
 		${SRC_DIR}/Interpreter.hs \
 		${SRC_DIR}/Translator.hs \
 		${SRC_DIR}/Parser.hs \
-		${SRC_DIR}/AMDefinitions.hs \
-		${SRC_DIR}/ConcreteTypes.hs
+		${SRC_DIR}/AMDefinitions.hs
 
 all: build
 

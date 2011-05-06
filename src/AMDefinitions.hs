@@ -1,3 +1,5 @@
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FunctionalDependencies #-}
 module AMDefinitions where
 
 data AMExpression = PUSH Integer
@@ -20,17 +22,32 @@ data AMExpression = PUSH Integer
                   | AND
                     deriving (Show)
 
-class (Show a) => AMNum a where
+class (Show a) => AMNum a b | a -> b where
     (+) :: a -> a -> a
     (*) :: a -> a -> a
     (-) :: a -> a -> a
     (/) :: a -> a -> a
-    fromInteger :: Integer -> a
-    (<=) :: (AMBoolean b) => a -> a -> b
-    (==) :: (AMBoolean b) => a -> a -> b
+    absInteger :: Integer -> a
+    (<=) :: a -> a -> b
+    (==) :: a -> a -> b
 
 class (Show b) => AMBoolean b where
     neg :: b -> b
     (&&) :: b -> b -> b
-    fromBool :: Bool -> b
+    absBool :: Bool -> b
     toBool :: b -> Bool
+
+instance AMBoolean Bool where
+    neg b = not b
+    a && b = (Prelude.&&) a b
+    absBool b = b
+    toBool b = b
+
+instance AMNum Integer Bool where
+    a + b = (Prelude.+) a b
+    a * b = (Prelude.*) a b
+    a - b = (Prelude.-) a b
+    a / b = Prelude.div a b
+    absInteger a = a
+    a <= b = (Prelude.<=) a b
+    a == b = (Prelude.==) a b
