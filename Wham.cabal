@@ -1,0 +1,14 @@
+Name:           wham
+Version:        0.5
+Description:    An virtual machine for the While language
+License:        LICENSE
+Author:         Erik Helin
+Maintainer:     erik.helin@gmail.com
+Build-Type:     Simple
+Cabal-Version:  >= 1.2
+Executable wham
+    Hs-source-dirs: src
+    GHC-options:    -Wall
+    Main-Is:        Main.hs
+    Build-Depends:  base, containers, parsec >= 3.1
+
