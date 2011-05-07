@@ -1,9 +1,9 @@
-module Evaluator (evaluate) where
+module Wham.Evaluator (evaluate) where
 
-import Interpreter
-import AMDefinitions
-import IntegerExc
-import BoolExc
+import Wham.Interpreter
+import Wham.AMDefinitions
+import Wham.IntegerExc
+import Wham.BoolExc
 import qualified Data.Map as Map
 
 evaluate :: [AMExpression] -> [(String, Integer)] -> 

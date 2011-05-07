@@ -1,4 +1,4 @@
-module Interpreter (
+module Wham.Interpreter (
        step,
        StateMode(..), 
        Configuration, 
@@ -8,7 +8,7 @@ module Interpreter (
 
 import Prelude hiding ((+), (-), (*), (/), (<=), (==), (&&))
 import qualified Data.Map as Map
-import AMDefinitions
+import Wham.AMDefinitions
 
 data StateMode = Normal 
                | Exception 

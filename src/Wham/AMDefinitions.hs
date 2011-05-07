@@ -1,6 +1,6 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FunctionalDependencies #-}
-module AMDefinitions where
+module Wham.AMDefinitions where
 
 data AMExpression = PUSH Integer
                   | FETCH String

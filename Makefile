@@ -3,8 +3,8 @@ TEX_BUILD_DIR=tex_build
 TEX_SRC_DIR=doc
 GHC_FLAGS=-Wall
 APP=wham
-SRC_DIR=src
-SOURCES=${SRC_DIR}/Main.hs \
+SRC_DIR=src/Wham
+SOURCES=src/Main.hs \
 		${SRC_DIR}/Interpreter.hs \
 		${SRC_DIR}/Translator.hs \
 		${SRC_DIR}/Parser.hs \
@@ -18,7 +18,7 @@ all: build
 
 build: $(SOURCES)
 	mkdir -p ${BUILD_DIR}
-	ghc ${GHC_FLAGS} -i${SRC_DIR} --make ${SRC_DIR}/Main.hs \
+	ghc ${GHC_FLAGS} -isrc --make src/Main.hs \
 		-outputdir ${BUILD_DIR} -o ${BUILD_DIR}/${APP}
 
 report: ${TEX_SRC_DIR}/report.tex

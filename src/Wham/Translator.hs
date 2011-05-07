@@ -1,7 +1,7 @@
-module Translator(translate) where
+module Wham.Translator(translate) where
 
-import Parser
-import AMDefinitions
+import Wham.Parser
+import Wham.AMDefinitions
 
 translate :: Statement -> [AMExpression]
 translate s = translateStatement s

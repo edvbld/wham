@@ -1,8 +1,8 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
-module IntegerExc where
+module Wham.IntegerExc where
 
-import AMDefinitions
-import BoolExc
+import Wham.AMDefinitions
+import Wham.BoolExc
 
 data IntegerExc = Integer Integer
                 | IntegerBottom

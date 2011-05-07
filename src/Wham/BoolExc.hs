@@ -1,6 +1,6 @@
-module BoolExc where
+module Wham.BoolExc where
 
-import AMDefinitions
+import Wham.AMDefinitions
 
 data BoolExc = Bool Bool
              | BoolBottom

@@ -1,4 +1,4 @@
-module Parser(
+module Wham.Parser(
         Statement(..), 
         ArithmeticExp(..), 
         BooleanExp(..), 
@@ -135,8 +135,8 @@ boolean =   true
         <|> parens booleanExpression
 
 booleanOperators :: OperatorTable Char () BooleanExp
-booleanOperators = [[prefix "!" Parser.not],
-                    [binary "&" Parser.and AssocLeft]]
+booleanOperators = [[prefix "!" Wham.Parser.not],
+                    [binary "&" Wham.Parser.and AssocLeft]]
 
 arithmeticComparison :: Parser BooleanExp
 arithmeticComparison = do { l <- arithmeticExpression;

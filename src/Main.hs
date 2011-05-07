@@ -3,10 +3,10 @@ module Main(main) where
 import System.Environment (getArgs)
 import Data.List (sort)
 import System.Console.GetOpt
-import Parser
-import Translator
-import Evaluator
-import Debugger
+import Wham.Parser
+import Wham.Translator
+import Wham.Evaluator
+import Wham.Debugger
 
 main :: IO()
 main = do args <- getArgs

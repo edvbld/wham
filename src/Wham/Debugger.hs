@@ -1,9 +1,9 @@
-module Debugger (debug) where
+module Wham.Debugger (debug) where
 
-import Interpreter
-import AMDefinitions
-import IntegerExc
-import BoolExc
+import Wham.Interpreter
+import Wham.AMDefinitions
+import Wham.IntegerExc
+import Wham.BoolExc
 
 debug :: [AMExpression] -> [(String, Integer)] -> IO()
 debug exps state = dstep (exps, [], toState state')
