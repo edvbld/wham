@@ -13,7 +13,7 @@ evaluate code state =
         Right (_, _, (st, mode)) -> 
             Right (toList st, mode)
         Left err -> Left err
-    where state' = map (\(s, i) -> (s, absInteger i)) state
+    where state' = map (\(s, i) -> (s, absInteger $ Just i)) state
 
 toList :: (Map.Map String IntegerExc) -> [(String, Integer)]
 toList m = convert (Map.toList m) []

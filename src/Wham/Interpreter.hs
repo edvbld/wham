@@ -22,14 +22,14 @@ type State a = Map.Map String a
 type Result a b = Either String (Configuration a b)
 type Configuration a b = ([AMExpression], Stack a b, (State a, StateMode))
 
-step :: (AMNum a b, AMBoolean b) => Configuration a b -> Result a b
+step :: (AMNum a, AMBoolean b) => Configuration a b -> Result a b
 step (exps, stack, state) = istep exps stack state
 
-istep :: (AMNum a b, AMBoolean b) => [AMExpression] -> Stack a b -> 
+istep :: (AMNum a, AMBoolean b) => [AMExpression] -> Stack a b -> 
          (State a, StateMode) -> Result a b
 istep [] [] state = Right ([], [], state)
 istep (PUSH n:exps) stack state@(_, Normal) = 
-    Right (exps, (StackInteger (absInteger n)):stack, state)
+    Right (exps, (StackInteger $ absInteger $ Just n):stack, state)
 istep (STORE x:exps) (StackInteger n:stack) (state, Normal) = 
     if isBottom n then Right (exps, stack, (state, Exception))
                   else Right (exps, stack, (state', Normal))
@@ -53,9 +53,9 @@ istep (DIV:exps) (StackInteger a:StackInteger b:stack) (state, Normal) =
     Right (exps, stack', (state, Normal))
         where stack' = StackInteger (a / b):stack
 istep (TRUE:exps) stack state@(_, Normal) = 
-    Right (exps, StackBool (absBool True):stack, state)
+    Right (exps, (StackBool $ absBool $ Just True):stack, state)
 istep (FALSE:exps) stack state@(_, Normal) = 
-    Right (exps, StackBool (absBool False):stack, state)
+    Right (exps, (StackBool $ absBool $ Just False):stack, state)
 istep (EQUAL:exps) (StackInteger a:StackInteger b:stack) state@(_, Normal) =
     Right (exps, stack', state)
         where stack' = StackBool (a == b):stack
@@ -88,11 +88,11 @@ istep exps stack state = Left $ "Encountered bad configuration: \n" ++
                                 "\tStack\n\t" ++ (show stack) ++
                                 "\tState\n\t" ++ (show state)
 
-update :: (AMNum a b) => String -> a -> State a -> State a
+update :: (AMNum a) => String -> a -> State a -> State a
 update x n s = 
     case Map.member x s of
         True -> Map.update (\_ -> Just n) x s
         False -> Map.insert x n s
 
-toState :: (AMNum a b) => [(String, a)] -> (State a, StateMode)
+toState :: (AMNum a) => [(String, a)] -> (State a, StateMode)
 toState list = (Map.fromList list, Normal)

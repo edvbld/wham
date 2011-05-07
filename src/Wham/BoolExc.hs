@@ -18,7 +18,8 @@ instance AMBoolean BoolExc where
     _ && _ = BoolBottom
     neg (Bool b) = Bool $ not b
     neg _ = BoolBottom
-    absBool b = (Bool b)
+    absBool (Just b) = (Bool b)
+    absBool Nothing = BoolBottom
     cond (Bool b) s1 s2 = if b then s1 else s2
     cond BoolBottom _ _ = []
 

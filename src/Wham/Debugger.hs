@@ -7,7 +7,7 @@ import Wham.BoolExc
 
 debug :: [AMExpression] -> [(String, Integer)] -> IO()
 debug exps state = dstep (exps, [], toState state')
-    where state' = map (\(s, i) -> (s, absInteger i)) state
+    where state' = map (\(s, i) -> (s, absInteger $ Just i)) state
 
 dstep :: Configuration IntegerExc BoolExc -> IO()
 dstep ([], [], _) = return ()

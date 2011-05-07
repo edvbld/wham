@@ -1,5 +1,3 @@
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE FunctionalDependencies #-}
 module Wham.AMDefinitions where
 
 data AMExpression = PUSH Integer
@@ -25,17 +23,17 @@ data AMExpression = PUSH Integer
 class HasBottom a where
     isBottom :: a -> Bool
 
-class (HasBottom a, Show a) => AMNum a b | a -> b where
+class (HasBottom a, Show a) => AMNum a where
     (+) :: a -> a -> a
     (*) :: a -> a -> a
     (-) :: a -> a -> a
     (/) :: a -> a -> a
-    (<=) :: a -> a -> b
-    (==) :: a -> a -> b
-    absInteger :: Integer -> a
+    (<=) :: (AMBoolean b) => a -> a -> b
+    (==) :: (AMBoolean b) => a -> a -> b
+    absInteger :: Maybe Integer -> a
 
 class (HasBottom a, Show a) => AMBoolean a where
     (&&) :: a -> a -> a
     neg :: a -> a
-    absBool :: Bool -> a
+    absBool :: Maybe Bool -> a
     cond :: a -> [AMExpression] -> [AMExpression] -> [AMExpression]
