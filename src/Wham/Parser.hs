@@ -9,6 +9,7 @@ import Text.ParserCombinators.Parsec
 import Text.ParserCombinators.Parsec.Expr
 import qualified Text.ParserCombinators.Parsec.Token as T
 import Text.ParserCombinators.Parsec.Language (emptyDef)
+import Wham.AST
 
 -- lexer
 
@@ -45,29 +46,6 @@ whitespace :: CharParser () ()
 whitespace = T.whiteSpace lexer
 
 -- parser
-
-data Statement = Skip
-               | Assign String ArithmeticExp
-               | If BooleanExp Statement Statement 
-               | While BooleanExp Statement
-               | Compound Statement Statement
-               | TryCatch Statement Statement
-                 deriving (Show)
-
-data ArithmeticExp = Number Integer
-                   | Variable String
-                   | Add ArithmeticExp ArithmeticExp
-                   | Mul ArithmeticExp ArithmeticExp
-                   | Sub ArithmeticExp ArithmeticExp
-                   | Div ArithmeticExp ArithmeticExp
-                     deriving (Show)
-
-data BooleanExp = Boolean Bool
-                | Not BooleanExp
-                | And BooleanExp BooleanExp
-                | Equal ArithmeticExp ArithmeticExp
-                | LessOrEqual ArithmeticExp ArithmeticExp
-                  deriving (Show)
 
 parser :: Parser Statement
 parser = do whitespace

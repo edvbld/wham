@@ -1,23 +1,25 @@
 module Wham.AMDefinitions where
 
-data AMExpression = PUSH Integer
-                  | FETCH String
-                  | STORE String
-                  | BRANCH [AMExpression] [AMExpression]
-                  | LOOP [AMExpression] [AMExpression]
-                  | TRY [AMExpression] [AMExpression]
-                  | CATCH [AMExpression]
-                  | NOOP
-                  | TRUE
-                  | FALSE
-                  | ADD
-                  | SUB
-                  | MULT
-                  | DIV
-                  | NEG
-                  | EQUAL
-                  | LE
-                  | AND
+import Wham.ControlPoint
+
+data AMExpression = PUSH Integer ControlPoint
+                  | FETCH String ControlPoint
+                  | STORE String ControlPoint
+                  | BRANCH [AMExpression] [AMExpression] ControlPoint
+                  | LOOP [AMExpression] [AMExpression] ControlPoint
+                  | TRY [AMExpression] [AMExpression] ControlPoint
+                  | CATCH [AMExpression] ControlPoint
+                  | NOOP ControlPoint
+                  | TRUE ControlPoint
+                  | FALSE ControlPoint
+                  | ADD ControlPoint
+                  | SUB ControlPoint
+                  | MULT ControlPoint
+                  | DIV ControlPoint
+                  | NEG ControlPoint
+                  | EQUAL ControlPoint
+                  | LE ControlPoint
+                  | AND ControlPoint
                     deriving (Show)
 
 class HasBottom a where
