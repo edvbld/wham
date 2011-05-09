@@ -2,14 +2,7 @@ module Wham.SignBoolExc (SignBoolExc(..)) where
 
 import Prelude hiding (not, and)
 import Wham.AMDefinitions
-
-data SignBoolExc = NoneT
-                 | AnyT
-                 | ErrorT
-                 | NonErrorT
-                 | TT
-                 | FF
-                 deriving (Show)
+import Wham.SignBoolExcType
 
 and :: SignBoolExc -> SignBoolExc -> SignBoolExc
 NoneT `and` _ = NoneT
@@ -45,7 +38,8 @@ instance AMBoolean SignBoolExc where
     (&&) = and
     neg = not
     absBool = fromBool
+    absSignBoolExc = id
     -- TODO: Define a better cond function
-    cond TT s1 s2 = s1
-    cond FF s1 s2 = s2
-    cond _  s1 s2 = s2
+    cond TT s1 _ = s1
+    cond FF _ s2 = s2
+    cond _  _ s2 = s2

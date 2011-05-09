@@ -1,6 +1,7 @@
 module Wham.BoolExc where
 
 import Wham.AMDefinitions
+import Wham.SignBoolExcType
 
 data BoolExc = Bool Bool
              | BoolBottom
@@ -20,6 +21,10 @@ instance AMBoolean BoolExc where
     neg _ = BoolBottom
     absBool (Just b) = (Bool b)
     absBool Nothing = BoolBottom
+    absSignBoolExc TT = Bool True
+    absSignBoolExc FF = Bool False
+    absSignBoolExc ErrorT = BoolBottom
+    absSignBoolExc _ = Bool False
     cond (Bool b) s1 s2 = if b then s1 else s2
     cond BoolBottom _ _ = []
 

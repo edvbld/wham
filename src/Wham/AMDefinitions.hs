@@ -1,6 +1,7 @@
 module Wham.AMDefinitions where
 
 import Wham.ControlPoint
+import Wham.SignBoolExcType
 
 data AMExpression = PUSH Integer ControlPoint
                   | FETCH String ControlPoint
@@ -38,4 +39,5 @@ class (HasBottom a, Show a) => AMBoolean a where
     (&&) :: a -> a -> a
     neg :: a -> a
     absBool :: Maybe Bool -> a
+    absSignBoolExc :: SignBoolExc -> a
     cond :: a -> [AMExpression] -> [AMExpression] -> [AMExpression]

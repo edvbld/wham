@@ -1,6 +1,7 @@
 module Wham.SignExc (SignExc(..)) where
 
 import Wham.AMDefinitions
+import Wham.SignBoolExc
 import Prelude hiding (div)
 
 data SignExc = Positive
@@ -179,8 +180,36 @@ NonPositive `sub` NonNegative = NonPositive
 _ `sub` NonNegative = NonErrorS
 _ `sub` NonErrorS = NonErrorS
 
+ret :: (AMBoolean b) => SignBoolExc -> b
+ret a = absSignBoolExc a
+
 eq :: (AMBoolean b) => SignExc -> SignExc -> b
-_ `eq` _ = absBool $ Just False
+NoneS `eq` _ = ret NoneT
+_ `eq` NoneS = ret NoneT
+ErrorS `eq` _ = ret ErrorT
+_ `eq` ErrorS = ret ErrorT
+AnyS `eq` _ = ret AnyT
+_ `eq` AnyS = ret AnyT
+_ `eq` NonErrorS = ret NonErrorT
+NonErrorS `eq` _ = ret NonErrorT
+Negative `eq` NonNegative = ret FF
+NonNegative `eq` Negative = ret FF
+_ `eq` NonNegative = ret NonErrorT
+NonNegative `eq` _ = ret NonErrorT
+Zero `eq` NonZero = ret FF
+NonZero `eq` Zero = ret FF
+NonZero `eq` _ = ret NonErrorT
+_ `eq` NonZero = ret NonErrorT
+Positive `eq` NonPositive = ret FF
+NonPositive `eq` NonPositive = ret FF
+_ `eq` NonPositive = ret NonErrorT
+Negative `eq` Positive = ret FF
+Zero `eq` Positive = ret FF
+Positive `eq` Positive = ret NonErrorT
+Zero `eq` Negative = ret FF
+Zero `eq` Zero = ret TT
+Negative `eq` Negative = ret NonErrorT
+a `eq` b = b `eq` a
 
 le :: (AMBoolean b) => SignExc -> SignExc -> b
 _ `le` _ = absBool $ Just False
