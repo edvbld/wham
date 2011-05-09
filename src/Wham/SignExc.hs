@@ -247,6 +247,7 @@ sign (Just n)
     | otherwise = Positive
 sign Nothing = ErrorS
 
+-- TODO: This might need some tweaking
 instance HasBottom SignExc where
     isBottom ErrorS = True
     isBottom _ = False
