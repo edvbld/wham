@@ -1,7 +1,7 @@
 Name:           wham
 Version:        0.5
 Description:    An virtual machine for the While language
-License:        LICENSE
+License:        BSD3
 Author:         Erik Helin
 Maintainer:     erik.helin@gmail.com
 Build-Type:     Simple
