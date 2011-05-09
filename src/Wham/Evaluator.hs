@@ -1,10 +1,12 @@
 module Wham.Evaluator (evaluate) where
 
+import qualified Data.Map as Map
+import qualified Data.Set as Set
 import Wham.Interpreter
-import Wham.AMDefinitions
+import Wham.AMDefinitions hiding ((==))
 import Wham.IntegerExc
 import Wham.BoolExc
-import qualified Data.Map as Map
+
 
 evaluate :: [AMExpression] -> [(String, Integer)] -> 
             Either String ([(String, Integer)], StateMode)
@@ -27,6 +29,10 @@ run :: Configuration IntegerExc BoolExc ->
        Either String (Configuration IntegerExc BoolExc)
 run ([], [], state) = Right ([], [], state)
 run c = case step c of 
-            Right conf -> run conf
+            Right conf -> if Set.size conf == 1 
+                            then 
+                                run $ head $ Set.elems conf
+                            else
+                                Left "Multiple configurations encountered"
             Left err -> Left err
 

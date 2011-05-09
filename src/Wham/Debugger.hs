@@ -1,7 +1,8 @@
 module Wham.Debugger (debug) where
 
+import qualified Data.Set as Set
 import Wham.Interpreter
-import Wham.AMDefinitions
+import Wham.AMDefinitions hiding ((==))
 import Wham.IntegerExc
 import Wham.BoolExc
 
@@ -13,6 +14,11 @@ dstep :: Configuration IntegerExc BoolExc -> IO()
 dstep ([], [], _) = return ()
 dstep c = do case step c of 
               Left err -> print $ "Error: " ++ err
-              Right c' -> do print c'
-                             _ <- getLine
-                             dstep c'
+              Right c' -> if Set.size c' == 1 
+                            then 
+                                do let res = head $ Set.elems c'
+                                   print $ res
+                                   _ <- getLine
+                                   dstep res
+                            else
+                                print $ "Error: Multiple configurations!"
