@@ -114,12 +114,33 @@ a `mul` b = b `mul` a
 
 div :: SignExc -> SignExc -> SignExc
 NoneS `div` _ = NoneS
+_ `div` NoneS = NoneS
 _ `div` Zero = ErrorS
+ErrorS `div` _ = ErrorS
 _ `div` ErrorS = ErrorS
 _ `div` NonPositive = AnyS
 _ `div` NonNegative = AnyS
 _ `div` NonErrorS = AnyS
 _ `div` AnyS = AnyS
+Zero `div` NonZero = Zero 
+Zero `div` Positive = Zero
+Negative `div` Positive = NonPositive
+Positive `div` Positive = NonNegative
+NonPositive `div` Positive = NonPositive
+NonZero `div` Positive = NonErrorS
+NonNegative `div` Positive = NonNegative
+NonErrorS `div` Positive = NonErrorS
+Negative `div` Negative = NonNegative
+Zero `div` Negative = Zero
+Positive `div` Negative = NonPositive
+NonPositive `div` Negative = NonNegative
+NonZero `div` Negative = NonErrorS
+NonNegative `div` Negative = NonPositive
+NonErrorS `div` Negative = NonErrorS
+NonPositive `div` NonZero = NonErrorS
+NonZero `div` NonZero = NonErrorS
+NonNegative `div` NonZero = NonErrorS
+NonErrorS `div` NonZero = NonErrorS
 a `div` b = b `div` a
 
 sub :: SignExc -> SignExc -> SignExc
