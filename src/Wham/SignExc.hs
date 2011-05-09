@@ -212,7 +212,33 @@ Negative `eq` Negative = ret NonErrorT
 a `eq` b = b `eq` a
 
 le :: (AMBoolean b) => SignExc -> SignExc -> b
-_ `le` _ = absBool $ Just False
+NoneS `le` _ = ret NoneT
+_ `le` NoneS = ret NoneT
+ErrorS `le` _ = ret ErrorT
+_ `le` ErrorS = ret ErrorT
+AnyS `le` _ = ret AnyT
+_ `le` AnyS = ret AnyT
+NonErrorS `le` _ = ret NonErrorT
+_ `le` NonErrorS = ret NonErrorT
+NonZero `le` _ = ret NonErrorT
+_ `le` NonZero = ret NonErrorT
+Negative `le` NonNegative = ret TT
+_ `le` NonNegative = ret NonErrorT
+Positive `le` NonPositive = ret FF
+_ `le` NonPositive = ret NonErrorT
+Negative `le` Positive = ret TT
+Positive `le` Negative = ret FF
+Zero `le` Positive = ret TT
+Positive `le` Zero = ret FF
+NonPositive `le` Positive = ret TT
+_ `le` Positive = ret NonErrorT
+Negative `le` Zero = ret TT
+Zero `le` Negative = ret FF
+Zero `le` Zero = ret TT
+_ `le` Zero = ret NonErrorT
+Negative `le` Negative = ret NonErrorT
+NonNegative `le` Negative = ret FF
+NonPositive `le` Negative = ret NonErrorT
 
 sign :: Maybe Integer -> SignExc
 sign (Just n) 
