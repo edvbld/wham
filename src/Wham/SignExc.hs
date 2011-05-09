@@ -28,7 +28,7 @@ NonErrorS `add` NoneS = NoneS
 NonErrorS `add` AnyS = AnyS
 NonErrorS `add` _ = NonErrorS
 Positive `add` NoneS = NoneS
-Positive `add` Negative = AnyS
+Positive `add` Negative = NonErrorS
 Positive `add` Positive = Positive
 Positive `add` Zero = Positive
 Positive `add` NonPositive = AnyS
@@ -140,7 +140,6 @@ sign Nothing = ErrorS
 
 instance HasBottom SignExc where
     isBottom ErrorS = True
-    isBottom AnyS = True
     isBottom _ = False
 
 instance AMNum SignExc where
