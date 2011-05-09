@@ -1,7 +1,7 @@
 module Wham.IntegerExc where
 
 import Wham.AMDefinitions
-import Wham.BoolExc
+import Wham.BoolExc()
 
 data IntegerExc = Integer Integer
                 | IntegerBottom
