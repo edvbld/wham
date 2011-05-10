@@ -16,7 +16,6 @@ analyze :: [AMExpression] -> [(String, Integer)] ->
 analyze code st = run (Map.singleton 0 [(code, [], toState state')]) Map.empty
     where state' = map (\(s,i) -> (s, absInteger $ Just i)) st
 
-
 run :: ConfigurationQueue -> ControlPointMap -> 
        Either String ControlPointMap
 run queue cps 
@@ -37,16 +36,39 @@ astep queue = case istep queue of
     Right (queue', set) -> Right (finished set, increase queue' set)
     Left err -> Left err
     where 
-        cp = cpToExec queue
         finished set = map state $ filter done $ Set.toList set
-        increase q set = foldl (\acc c -> update acc cp c) q $ Set.toList set
+        increase q set = foldl (\acc c -> update acc c) q $ Set.toList set
 
-update :: ConfigurationQueue -> Integer -> Configuration SignExc SignBoolExc -> ConfigurationQueue
-update q cp c = case Map.lookup cp q of
-    Just confs -> Map.insert cp (c:confs) q
-    Nothing -> if done c 
-                then q 
-                else Map.insert cp [c] q
+update :: ConfigurationQueue -> Configuration SignExc SignBoolExc -> 
+          ConfigurationQueue
+update q c = 
+    case mcp of
+        Nothing -> q
+        Just cp -> case Map.lookup cp q of 
+                    Just confs -> Map.insert cp (c:confs) q
+                    Nothing -> Map.insert cp [c] q
+    where mcp = getCP c
+
+getCP :: Configuration SignExc SignBoolExc -> Maybe Integer
+getCP ([], _, _) = Nothing
+getCP ((PUSH _ cp):_, _, _) = Just cp
+getCP ((FETCH _ cp):_, _, _) = Just cp
+getCP ((STORE _ cp):_, _, _) = Just cp
+getCP ((BRANCH _ _ cp):_, _, _) = Just cp
+getCP ((LOOP _ _ cp):_, _, _) = Just cp
+getCP ((TRY _ _ cp):_, _, _) = Just cp
+getCP ((CATCH _ cp):_, _, _) = Just cp
+getCP ((NOOP cp):_, _, _) = Just cp
+getCP ((TRUE cp):_, _, _) = Just cp
+getCP ((FALSE cp):_, _, _) = Just cp
+getCP ((ADD cp):_, _, _) = Just cp
+getCP ((SUB cp):_, _, _) = Just cp
+getCP ((MULT cp):_, _, _) = Just cp
+getCP ((DIV cp):_, _, _) = Just cp
+getCP ((NEG cp):_, _, _) = Just cp
+getCP ((EQUAL cp):_, _, _) = Just cp
+getCP ((LE cp):_, _, _) = Just cp
+getCP ((AND cp):_, _, _) = Just cp
 
 state :: Configuration SignExc SignBoolExc -> State SignExc
 state (_,_, (s,_)) = s
@@ -61,7 +83,8 @@ cpToExec q = cp
         keys = Map.keys q
         cp = foldl min (head keys) keys
 
-istep :: ConfigurationQueue -> Either String (ConfigurationQueue, ConfigurationSet)
+istep :: ConfigurationQueue -> 
+         Either String (ConfigurationQueue, ConfigurationSet)
 istep queue = case Map.lookup cp queue of 
     Just conf -> case step $ head conf of
                     Right confs -> Right (adjust cp queue, confs)
