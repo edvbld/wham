@@ -8,6 +8,7 @@ import qualified Data.Set as Set
 import qualified Data.Map as Map
 
 type ControlPointMap = Map.Map Integer (State SignExc)
+
 analyze :: [AMExpression] -> [(String, Integer)] -> 
            Either String ControlPointMap
 analyze code state = run (code, [], toState state') Map.empty

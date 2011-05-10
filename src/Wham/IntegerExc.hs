@@ -5,14 +5,15 @@ import Wham.BoolExc()
 
 data IntegerExc = Integer Integer
                 | IntegerBottom
+                deriving (Eq, Ord)
 
 instance Show IntegerExc where
     show (Integer i) = show i
     show IntegerBottom = "Bottom"
 
 instance HasBottom IntegerExc where
-    isBottom IntegerBottom = True
-    isBottom _ = False
+    isBottom IntegerBottom = Yes
+    isBottom _ = No
 
 instance AMNum IntegerExc where
     (Integer a) + (Integer b) = Integer $ (Prelude.+) a b
@@ -30,3 +31,4 @@ instance AMNum IntegerExc where
     _ <= _ = absBool Nothing
     (Integer a) == (Integer b) = absBool $ Just $ (Prelude.==) a b
     _ == _ = absBool Nothing
+    castToNonBottom = id {- TODO: raise error here -}

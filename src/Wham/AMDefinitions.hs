@@ -21,12 +21,13 @@ data AMExpression = PUSH Integer ControlPoint
                   | EQUAL ControlPoint
                   | LE ControlPoint
                   | AND ControlPoint
-                    deriving (Show)
+                    deriving (Show, Ord, Eq)
 
+data Choice = Yes | No | Maybe
 class HasBottom a where
-    isBottom :: a -> Bool
+    isBottom :: a -> Choice
 
-class (HasBottom a, Show a) => AMNum a where
+class (Ord a, HasBottom a, Show a) => AMNum a where
     (+) :: a -> a -> a
     (*) :: a -> a -> a
     (-) :: a -> a -> a
@@ -34,10 +35,11 @@ class (HasBottom a, Show a) => AMNum a where
     (<=) :: (AMBoolean b) => a -> a -> b
     (==) :: (AMBoolean b) => a -> a -> b
     absInteger :: Maybe Integer -> a
+    castToNonBottom :: a -> a
 
-class (HasBottom a, Show a) => AMBoolean a where
+class (Ord a, HasBottom a, Show a) => AMBoolean a where
     (&&) :: a -> a -> a
     neg :: a -> a
     absBool :: Maybe Bool -> a
     absSignBoolExc :: SignBoolExc -> a
-    cond :: a -> [AMExpression] -> [AMExpression] -> [AMExpression]
+    cond :: a -> [AMExpression] -> [AMExpression] -> [[AMExpression]]

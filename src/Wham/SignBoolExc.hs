@@ -30,16 +30,16 @@ fromBool (Just False) = FF
 fromBool Nothing = ErrorT
 
 instance HasBottom SignBoolExc where
-    isBottom AnyT = True
-    isBottom ErrorT = True
-    isBottom _ = False
+    isBottom AnyT = Maybe
+    isBottom ErrorT = Yes
+    isBottom _ = No
 
 instance AMBoolean SignBoolExc where
     (&&) = and
     neg = not
     absBool = fromBool
     absSignBoolExc = id
-    -- TODO: Define a better cond function
-    cond TT s1 _ = s1
-    cond FF _ s2 = s2
-    cond _  _ s2 = s2
+    cond TT s1 _ = [s1]
+    cond FF _ s2 = [s2]
+    cond NonErrorT s1 s2 = [s1,s2]
+    cond _ _ _ = [[]] {- TOOD: raise error here -}

@@ -23,14 +23,6 @@ addCP (TryCatch s1 s2) cp = (cp2 + 1, TryCatchCP stm1 stm2 cp)
         (cp1, stm1) = addCP s1 $ cp + 1
         (cp2, stm2) = addCP s2 cp1
 
-getCP :: StatementCP -> ControlPoint
-getCP (SkipCP cp) = cp
-getCP (AssignCP _ _ cp) = cp
-getCP (IfCP _ _ _ cp) = cp
-getCP (WhileCP _ _ cp) = cp
-getCP (TryCatchCP _ _ cp) = cp
-getCP _ = -1
-
 translate :: Statement -> [AMExpression]
 translate s = translateStatement stm
     where

@@ -5,14 +5,15 @@ import Wham.SignBoolExcType
 
 data BoolExc = Bool Bool
              | BoolBottom
+             deriving (Eq, Ord)
 
 instance Show BoolExc where
     show (Bool b) = show b
     show BoolBottom = "Bottom"
 
 instance HasBottom BoolExc where
-    isBottom BoolBottom = True
-    isBottom _ = False
+    isBottom BoolBottom = Yes
+    isBottom _ = No
 
 instance AMBoolean BoolExc where
     (Bool a) && (Bool b) = Bool $ (Prelude.&&) a b
@@ -25,6 +26,6 @@ instance AMBoolean BoolExc where
     absSignBoolExc FF = Bool False
     absSignBoolExc ErrorT = BoolBottom
     absSignBoolExc _ = Bool False
-    cond (Bool b) s1 s2 = if b then s1 else s2
-    cond BoolBottom _ _ = []
+    cond (Bool b) s1 s2 = if b then [s1] else [s2]
+    cond BoolBottom _ _ = [[]] {- TODO: raise error here -}
 

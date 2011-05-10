@@ -1,9 +1,9 @@
 module Wham.SignBoolExcType where
 
 data SignBoolExc = NoneT
-                 | AnyT
-                 | ErrorT
-                 | NonErrorT
-                 | TT
                  | FF
-                 deriving (Show)
+                 | TT
+                 | NonErrorT
+                 | ErrorT
+                 | AnyT
+                 deriving (Show, Eq, Ord)

@@ -14,11 +14,11 @@ import Wham.AMDefinitions
 
 data StateMode = Normal 
                | Exception 
-                 deriving (Eq, Show)
+                 deriving (Eq, Show, Ord)
 
 data StackElement a b = StackInteger a
                       | StackBool b
-                      deriving (Show)
+                      deriving (Show, Ord, Eq)
 type Stack a b = [StackElement a b]
 type State a = Map.Map String a
 type Result a b = Either String (Set.Set (Configuration a b))
@@ -36,9 +36,15 @@ istep [] [] state = ret ([], [], state)
 istep (PUSH n _:exps) stack state@(_, Normal) = 
     ret (exps, (StackInteger $ absInteger $ Just n):stack, state)
 istep (STORE x _:exps) (StackInteger n:stack) (state, Normal) = 
-    if isBottom n then ret (exps, stack, (state, Exception))
-                  else ret (exps, stack, (state', Normal))
-        where state' = update x n state 
+    case isBottom n of
+        Yes -> ret (exps, stack, (state, Exception))
+        Maybe -> Right set'
+        No -> ret (exps, stack, (state', Normal))
+    where
+        state' = update x n state 
+        state'' = update x (castToNonBottom n) state
+        set = Set.singleton (exps, stack, (state, Exception))
+        set' = Set.insert (exps, stack, (state'', Normal)) set
 istep (FETCH x _:exps) stack s@(state, Normal) = 
     case Map.lookup x state of
         Just value -> ret (exps, (StackInteger value):stack, s)
@@ -74,9 +80,18 @@ istep (NEG _:exps) (StackBool a:stack) state@(_, Normal) =
     ret (exps, stack', state)
         where stack' = StackBool (neg a):stack
 istep (BRANCH s1 s2 _:exps) (StackBool b:stack) (state, Normal) =
-    if isBottom b then ret (exps, stack, (state, Exception))
-                  else ret (exps', stack, (state, Normal))
-        where exps' = (cond b s1 s2) ++ exps
+    case isBottom b of
+        Yes -> ret (exps, stack, (state, Exception))
+        No -> Right set'
+        Maybe -> Right set
+    where
+        branches = cond b s1 s2
+        set' = Set.fromList $ 
+                    map (\c -> (c ++ exps, stack, (state, Normal))) branches
+        set = (Set.insert (s2 ++ exps, stack, (state, Normal))) $
+              (Set.insert (s1 ++ exps, stack, (state, Normal))) $
+              (Set.insert (exps, stack, (state, Exception))) $
+               Set.empty
 istep (LOOP b s cp:exps) stack state@(_, Normal) =
     ret (exps', stack, state)
         where exps' = b ++ [(BRANCH (s ++ [LOOP b s cp]) [NOOP cp] cp)] ++ exps

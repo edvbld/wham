@@ -14,7 +14,7 @@ data SignExc = Positive
              | ErrorS
              | AnyS
              | NoneS
-             deriving (Show)
+             deriving (Show, Ord, Eq)
 
 add :: SignExc -> SignExc -> SignExc
 NoneS `add` _ = NoneS
@@ -249,8 +249,9 @@ sign Nothing = ErrorS
 
 -- TODO: This might need some tweaking
 instance HasBottom SignExc where
-    isBottom ErrorS = True
-    isBottom _ = False
+    isBottom ErrorS = Yes
+    isBottom AnyS = Maybe
+    isBottom _ = No
 
 instance AMNum SignExc where
     a + b = a `add` b
@@ -260,3 +261,5 @@ instance AMNum SignExc where
     a <= b = a `le` b
     a == b = a `eq` b
     absInteger = sign
+    castToNonBottom AnyS = NonErrorS
+    castToNonBottom a = a {- TODO: raise error here -}
