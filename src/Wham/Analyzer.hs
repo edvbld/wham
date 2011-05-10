@@ -7,7 +7,7 @@ import Wham.AMDefinitions hiding ((==), (+))
 import qualified Data.Set as Set
 import qualified Data.Map as Map
 
-type ControlPointMap = Map.Map Integer (Set.Set (State SignExc))
+type ControlPointMap = Map.Map Integer (Set.Set (State SignExc, StateMode))
 type ConfigurationSet = Set.Set (Configuration SignExc SignBoolExc)
 type ConfigurationQueue = Map.Map Integer [Configuration SignExc SignBoolExc]
 
@@ -30,19 +30,19 @@ run queue cps
             cps' states = foldl (insert c) cps states
 
 insert :: Configuration SignExc SignBoolExc -> ControlPointMap -> 
-          State SignExc -> ControlPointMap
+          (State SignExc, StateMode) -> ControlPointMap
 insert ((STORE _ cp):_, _, _) m s = 
     case Map.lookup cp m of
         Nothing -> Map.insert cp (Set.singleton s) m
         Just set -> Map.insert cp (Set.insert s set) m
-insert _ m s = m
+insert _ m _ = m
 
 
 empty :: ConfigurationQueue -> Bool
 empty q = Map.null q
 
 astep :: ConfigurationQueue -> 
-         Either String ([State SignExc], ConfigurationQueue)
+         Either String ([(State SignExc, StateMode)], ConfigurationQueue)
 astep queue = case istep queue of 
     Right (queue', set) -> Right (finished set, increase queue' set)
     Left err -> Left err
@@ -81,8 +81,8 @@ getCP ((EQUAL cp):_, _, _) = Just cp
 getCP ((LE cp):_, _, _) = Just cp
 getCP ((AND cp):_, _, _) = Just cp
 
-state :: Configuration SignExc SignBoolExc -> State SignExc
-state (_,_, (s,_)) = s
+state :: Configuration SignExc SignBoolExc -> (State SignExc, StateMode)
+state (_,_, s) = s
 
 cpToExec :: ConfigurationQueue -> Integer
 cpToExec q = cp
