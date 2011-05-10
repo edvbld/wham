@@ -21,7 +21,7 @@ run :: ConfigurationQueue -> ControlPointMap ->
        Either String ControlPointMap
 run queue cps 
     | empty queue = Right cps
-    | otherwise = case astep queue of
+    | otherwise = case astep queue cps of
                      Right (confs, queue') -> run queue' (cps' confs)
                      Left err -> Left err
         where
@@ -35,7 +35,6 @@ insert :: Configuration SignExc SignBoolExc -> ControlPointMap ->
 insert ((STORE _ cp):_, _, _) m c = insertImpl cp m c
 insert ((BRANCH _ _ cp):_, _, _) m c = insertImpl cp m c
 insert ((TRY _ _ cp):_, _, _) m c = insertImpl cp m c
-insert ((LOOP _ _ cp):_, _, _) m c = insertImpl cp m c
 insert _ m _ = m
 
 insertImpl :: Integer -> ControlPointMap -> Configuration SignExc SignBoolExc ->
@@ -47,23 +46,30 @@ insertImpl cp m c = case Map.lookup cp m of
 empty :: ConfigurationQueue -> Bool
 empty q = Map.null q
 
-astep :: ConfigurationQueue -> 
+astep :: ConfigurationQueue -> ControlPointMap ->
          Either String ([Configuration SignExc SignBoolExc], ConfigurationQueue)
-astep queue = case istep queue of 
+astep queue cps = case istep queue of 
     Right (queue', set) -> Right (Set.toList set, increase queue' set)
     Left err -> Left err
     where 
-        increase q set = foldl (\acc c -> update acc c) q $ Set.toList set
+        cp' = cpToExec queue
+        increase q set = foldl (\acc c -> update acc c cp' cps) q $ Set.toList set
 
 update :: ConfigurationQueue -> Configuration SignExc SignBoolExc -> 
-          ConfigurationQueue
-update q c = 
+          Integer -> ControlPointMap -> ConfigurationQueue
+update q c cp' cps = 
     case mcp of
         Nothing -> q
-        Just cp -> case Map.lookup cp q of 
-                    Just confs -> Map.insert cp (c:confs) q
-                    Nothing -> Map.insert cp [c] q
-    where mcp = getCP c
+        Just cp -> case Map.lookup cp' cps of
+                    Just set -> case Set.member c set of
+                                 True -> q
+                                 False -> q' cp
+                    Nothing -> q' cp
+   where
+    mcp = getCP c
+    q' cp = case Map.lookup cp q of 
+            Just confs -> Map.insert cp (c:confs) q
+            Nothing -> Map.insert cp [c] q
 
 getCP :: Configuration SignExc SignBoolExc -> Maybe Integer
 getCP ([], _, _) = Nothing
@@ -85,9 +91,6 @@ getCP ((NEG cp):_, _, _) = Just cp
 getCP ((EQUAL cp):_, _, _) = Just cp
 getCP ((LE cp):_, _, _) = Just cp
 getCP ((AND cp):_, _, _) = Just cp
-
-state :: Configuration SignExc SignBoolExc -> (State SignExc, StateMode)
-state (_,_, s) = s
 
 cpToExec :: ConfigurationQueue -> Integer
 cpToExec q = cp
