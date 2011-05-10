@@ -4,6 +4,7 @@ module Wham.Interpreter (
        Configuration, 
        Stack, 
        toState,
+       State,
        StackElement(..)) where
 
 import Prelude hiding ((+), (-), (*), (/), (<=), (==), (&&))

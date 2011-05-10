@@ -4,20 +4,37 @@ import Wham.AST
 import Wham.ControlPoint
 import Wham.AMDefinitions hiding ((+))
 
-addControlPoints :: Statement -> ControlPoint -> StatementCP
-addControlPoints (Skip) cp = SkipCP cp
-addControlPoints (Assign x a) cp = AssignCP x a cp
-addControlPoints (Compound s1 s2) cp = CompoundCP (addControlPoints s1 cp) 
-                                                  (addControlPoints s2 $ cp + 1)
-addControlPoints (If b s1 s2) cp = IfCP b (addControlPoints s1 $ cp + 1) 
-                                          (addControlPoints s2 $ cp + 2) cp
-addControlPoints (While b s) cp = WhileCP b (addControlPoints s $ cp + 1) cp
-addControlPoints (TryCatch s1 s2) cp = TryCatchCP 
-                                        (addControlPoints s1 $ cp + 1) 
-                                        (addControlPoints s2 $ cp + 2) cp
+addCP :: Statement -> ControlPoint -> (ControlPoint, StatementCP)
+addCP (Skip) cp = (cp + 1, SkipCP cp)
+addCP (Assign x a) cp = (cp + 1, AssignCP x a cp)
+addCP (Compound s1 s2) cp = (cp2, CompoundCP stm1 stm2)
+    where
+        (cp1, stm1) = addCP s1 cp
+        (cp2, stm2) = addCP s2 cp1
+addCP (If b s1 s2) cp = (cp2 + 1, IfCP b stm1 stm2 cp)
+    where
+        (cp1, stm1) = addCP s1 $ cp + 1
+        (cp2, stm2) = addCP s2 cp1
+addCP (While b s) cp = (cp1 + 1, WhileCP b stm cp)
+    where
+        (cp1, stm) = addCP s $ cp + 1
+addCP (TryCatch s1 s2) cp = (cp2 + 1, TryCatchCP stm1 stm2 cp)
+    where
+        (cp1, stm1) = addCP s1 $ cp + 1
+        (cp2, stm2) = addCP s2 cp1
+
+getCP :: StatementCP -> ControlPoint
+getCP (SkipCP cp) = cp
+getCP (AssignCP _ _ cp) = cp
+getCP (IfCP _ _ _ cp) = cp
+getCP (WhileCP _ _ cp) = cp
+getCP (TryCatchCP _ _ cp) = cp
+getCP _ = -1
 
 translate :: Statement -> [AMExpression]
-translate s = translateStatement $ addControlPoints s 0 
+translate s = translateStatement stm
+    where
+        (_, stm) = addCP s 0
 
 translateArithmetic :: ArithmeticExp -> ControlPoint -> [AMExpression]
 translateArithmetic (Number n) cp = [(PUSH n cp)]
