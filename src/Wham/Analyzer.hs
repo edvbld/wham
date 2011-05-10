@@ -35,6 +35,10 @@ insert ((STORE _ cp):_, _, _) m s =
     case Map.lookup cp m of
         Nothing -> Map.insert cp (Set.singleton s) m
         Just set -> Map.insert cp (Set.insert s set) m
+insert ((BRANCH _ _ cp):_, _, _) m s =
+    case Map.lookup cp m of
+        Nothing -> Map.insert cp (Set.singleton s) m
+        Just set -> Map.insert cp (Set.insert s set) m
 insert _ m _ = m
 
 

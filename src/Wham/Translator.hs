@@ -11,7 +11,7 @@ addCP (Compound s1 s2) cp = (cp2, CompoundCP stm1 stm2)
     where
         (cp1, stm1) = addCP s1 cp
         (cp2, stm2) = addCP s2 cp1
-addCP (If b s1 s2) cp = (cp2 + 1, IfCP b stm1 stm2 cp)
+addCP (If b s1 s2) cp = (cp2, IfCP b stm1 stm2 cp)
     where
         (cp1, stm1) = addCP s1 $ cp + 1
         (cp2, stm2) = addCP s2 cp1
