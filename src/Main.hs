@@ -8,6 +8,7 @@ import Wham.Translator
 import Wham.Evaluator
 import Wham.Debugger
 import Wham.Analyzer
+import qualified Data.Map as Map
 
 main :: IO()
 main = do args <- getArgs
@@ -41,7 +42,9 @@ run fname content vars action = case parse parser fname content of
                                   Right (state, mode) -> 
                                      putStrLn $ 
                                         (show mode) ++ ": " ++ (show state)
-                        Analyze -> print $ analyze code vars
+                        Analyze -> do case analyze code vars of
+                                        Right res -> do mapM_ print (Map.toList res)
+                                        Left err -> print err
     Left err -> print err
 
 data Flag = Analysis | Debug | State [(String, Integer)] 

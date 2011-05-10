@@ -7,7 +7,7 @@ import Wham.AMDefinitions hiding ((==), (+))
 import qualified Data.Set as Set
 import qualified Data.Map as Map
 
-type ControlPointMap = Map.Map Integer (State SignExc)
+type ControlPointMap = Map.Map Integer (Set.Set (State SignExc))
 type ConfigurationSet = Set.Set (Configuration SignExc SignBoolExc)
 type ConfigurationQueue = Map.Map Integer [Configuration SignExc SignBoolExc]
 
@@ -25,7 +25,18 @@ run queue cps
                      Left err -> Left err
         where
             cp = cpToExec queue
-            cps' states = foldl (\m s -> Map.insert cp s m) cps states
+            Just confs = Map.lookup cp queue
+            c = head confs
+            cps' states = foldl (insert c) cps states
+
+insert :: Configuration SignExc SignBoolExc -> ControlPointMap -> 
+          State SignExc -> ControlPointMap
+insert ((STORE _ cp):_, _, _) m s = 
+    case Map.lookup cp m of
+        Nothing -> Map.insert cp (Set.singleton s) m
+        Just set -> Map.insert cp (Set.insert s set) m
+insert _ m s = m
+
 
 empty :: ConfigurationQueue -> Bool
 empty q = Map.null q
@@ -36,7 +47,7 @@ astep queue = case istep queue of
     Right (queue', set) -> Right (finished set, increase queue' set)
     Left err -> Left err
     where 
-        finished set = map state $ filter done $ Set.toList set
+        finished set = map state $ Set.toList set
         increase q set = foldl (\acc c -> update acc c) q $ Set.toList set
 
 update :: ConfigurationQueue -> Configuration SignExc SignBoolExc -> 
@@ -73,10 +84,6 @@ getCP ((AND cp):_, _, _) = Just cp
 state :: Configuration SignExc SignBoolExc -> State SignExc
 state (_,_, (s,_)) = s
 
-done :: Configuration SignExc SignBoolExc -> Bool
-done ([], [], _) = True
-done _ = False
-
 cpToExec :: ConfigurationQueue -> Integer
 cpToExec q = cp
     where
@@ -96,7 +103,7 @@ istep queue = case Map.lookup cp queue of
 
 adjust :: Integer -> ConfigurationQueue -> ConfigurationQueue
 adjust cp q = case Map.lookup cp q of
-    Just conf -> if length conf == 1
+    Just confs -> if length confs == 1
                     then Map.delete cp q
-                    else Map.insert cp (tail conf) q
+                    else Map.insert cp (tail confs) q
     Nothing -> q
