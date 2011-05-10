@@ -18,7 +18,7 @@ addCP (If b s1 s2) cp = (cp2, IfCP b stm1 stm2 cp)
 addCP (While b s) cp = (cp1 + 1, WhileCP b stm cp)
     where
         (cp1, stm) = addCP s $ cp + 1
-addCP (TryCatch s1 s2) cp = (cp2 + 1, TryCatchCP stm1 stm2 cp)
+addCP (TryCatch s1 s2) cp = (cp2, TryCatchCP stm1 stm2 cp)
     where
         (cp1, stm1) = addCP s1 $ cp + 1
         (cp2, stm2) = addCP s2 cp1
