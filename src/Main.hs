@@ -9,6 +9,7 @@ import Wham.Evaluator
 import Wham.Debugger
 import Wham.Analyzer
 import qualified Data.Map as Map
+import qualified Data.Set as Set
 
 main :: IO()
 main = do args <- getArgs
@@ -42,8 +43,9 @@ run fname content vars action = case parse parser fname content of
                                   Right (state, mode) -> 
                                      putStrLn $ 
                                         (show mode) ++ ": " ++ (show state)
-                        Analyze -> do case analyze code vars of
-                                        Right res -> do mapM_ print (Map.toList res)
+                        Analyze -> do print code
+                                      case analyze code vars of
+                                        Right res -> do mapM_ (\(i, s) -> mapM_ (\(_, _, s') -> print (i,s')) (Set.toList s)) (Map.toList res)
                                         Left err -> print err
     Left err -> print err
 

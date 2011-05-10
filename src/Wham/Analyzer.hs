@@ -7,7 +7,8 @@ import Wham.AMDefinitions hiding ((==), (+))
 import qualified Data.Set as Set
 import qualified Data.Map as Map
 
-type ControlPointMap = Map.Map Integer (Set.Set (State SignExc, StateMode))
+type ControlPointMap = 
+    Map.Map Integer (Set.Set (Configuration SignExc SignBoolExc))
 type ConfigurationSet = Set.Set (Configuration SignExc SignBoolExc)
 type ConfigurationQueue = Map.Map Integer [Configuration SignExc SignBoolExc]
 
@@ -21,41 +22,37 @@ run :: ConfigurationQueue -> ControlPointMap ->
 run queue cps 
     | empty queue = Right cps
     | otherwise = case astep queue of
-                     Right (states, queue') -> run queue' (cps' states)
+                     Right (confs, queue') -> run queue' (cps' confs)
                      Left err -> Left err
         where
             cp = cpToExec queue
-            Just confs = Map.lookup cp queue
-            c = head confs
-            cps' states = foldl (insert c) cps states
+            Just cs = Map.lookup cp queue
+            c = head cs
+            cps' confs = foldl (insert c) cps confs
 
 insert :: Configuration SignExc SignBoolExc -> ControlPointMap -> 
-          (State SignExc, StateMode) -> ControlPointMap
-insert ((STORE _ cp):_, _, _) m s = 
-    case Map.lookup cp m of
-        Nothing -> Map.insert cp (Set.singleton s) m
-        Just set -> Map.insert cp (Set.insert s set) m
-insert ((BRANCH _ _ cp):_, _, _) m s =
-    case Map.lookup cp m of
-        Nothing -> Map.insert cp (Set.singleton s) m
-        Just set -> Map.insert cp (Set.insert s set) m
-insert ((TRY _ _ cp):_, _, _) m s =
-    case Map.lookup cp m of
-        Nothing -> Map.insert cp (Set.singleton s) m
-        Just set -> Map.insert cp (Set.insert s set) m
+          Configuration SignExc SignBoolExc -> ControlPointMap
+insert ((STORE _ cp):_, _, _) m c = insertImpl cp m c
+insert ((BRANCH _ _ cp):_, _, _) m c = insertImpl cp m c
+insert ((TRY _ _ cp):_, _, _) m c = insertImpl cp m c
+insert ((LOOP _ _ cp):_, _, _) m c = insertImpl cp m c
 insert _ m _ = m
 
+insertImpl :: Integer -> ControlPointMap -> Configuration SignExc SignBoolExc ->
+              ControlPointMap
+insertImpl cp m c = case Map.lookup cp m of
+                     Nothing -> Map.insert cp (Set.singleton c) m
+                     Just set -> Map.insert cp (Set.insert c set) m
 
 empty :: ConfigurationQueue -> Bool
 empty q = Map.null q
 
 astep :: ConfigurationQueue -> 
-         Either String ([(State SignExc, StateMode)], ConfigurationQueue)
+         Either String ([Configuration SignExc SignBoolExc], ConfigurationQueue)
 astep queue = case istep queue of 
-    Right (queue', set) -> Right (finished set, increase queue' set)
+    Right (queue', set) -> Right (Set.toList set, increase queue' set)
     Left err -> Left err
     where 
-        finished set = map state $ Set.toList set
         increase q set = foldl (\acc c -> update acc c) q $ Set.toList set
 
 update :: ConfigurationQueue -> Configuration SignExc SignBoolExc -> 
