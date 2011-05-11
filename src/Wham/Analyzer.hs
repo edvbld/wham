@@ -16,7 +16,8 @@ analyze code st =
         Left err -> Left err
     where
         state' = map (\(s,i) -> (s, absInteger $ Just i)) st
-        mcp = run (Map.singleton 0 [(code, [], toState state')]) Map.empty
+        mcp = run (Map.singleton 0 [(code, [], toState state')]) 
+                  (Map.singleton 0 (Set.singleton ([], [], (Map.empty, Normal))))
 
 lub :: ConfigurationSet -> State SignExc
 lub set = s
