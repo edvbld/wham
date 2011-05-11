@@ -1,4 +1,4 @@
-module Wham.Translator(translate) where
+module Wham.Translator(translate, annotate) where
 
 import Wham.AST
 import Wham.ControlPoint
@@ -23,10 +23,12 @@ addCP (TryCatch s1 s2) cp = (cp2, TryCatchCP stm1 stm2 cp)
         (cp1, stm1) = addCP s1 $ cp + 1
         (cp2, stm2) = addCP s2 cp1
 
-translate :: Statement -> [AMExpression]
-translate s = translateStatement stm
-    where
-        (_, stm) = addCP s 0
+annotate :: Statement -> StatementCP
+annotate s = stm
+    where (_, stm) = addCP s 0
+
+translate :: StatementCP -> [AMExpression]
+translate s = translateStatement s
 
 translateArithmetic :: ArithmeticExp -> ControlPoint -> [AMExpression]
 translateArithmetic (Number n) cp = [(PUSH n cp)]

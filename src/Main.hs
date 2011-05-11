@@ -3,12 +3,13 @@ module Main(main) where
 import System.Environment (getArgs)
 import Data.List (sort)
 import System.Console.GetOpt
+import qualified Data.Map as Map
 import Wham.Parser
 import Wham.Translator
 import Wham.Evaluator
 import Wham.Debugger
 import Wham.Analyzer
-import qualified Data.Map as Map
+import Wham.PrettyPrinter
 
 main :: IO()
 main = do args <- getArgs
@@ -34,7 +35,8 @@ eval _ _ _ = error $ usageInfo header options
 
 run :: String -> String -> [(String, Integer)] -> Action -> IO()
 run fname content vars action = case parse parser fname content of 
-    Right stmt -> do let code = translate stmt
+    Right stmt -> do let ast = annotate stmt
+                     let code = translate ast
                      case action of
                         Step -> debug code vars
                         Run  -> case evaluate code vars of
@@ -45,6 +47,7 @@ run fname content vars action = case parse parser fname content of
                         Analyze -> do print code
                                       case analyze code vars of
                                         Right res -> do mapM_ print $ Map.toList res
+                                                        putStrLn $ pprint ast res
                                         Left err -> print err
     Left err -> print err
 
