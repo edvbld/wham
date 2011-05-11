@@ -7,7 +7,7 @@ import Wham.Parser
 import Wham.Translator
 import Wham.Evaluator
 import Wham.Debugger
-import Wham.Analyzer
+import Wham.AnalyzeRunner
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 

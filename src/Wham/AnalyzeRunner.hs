@@ -1,4 +1,4 @@
-module Wham.Analyzer(analyze) where
+module Wham.AnalyzeRunner(analyze) where
 
 import Wham.SignExc
 import Wham.SignBoolExc
