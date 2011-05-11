@@ -1,0 +1,88 @@
+\documentclass[11pt,oneside,a4paper]{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{stmaryrd}
+
+\newenvironment{changemargin}[2]{%
+\begin{list}{}{%
+\setlength{\topsep}{0pt}%
+\setlength{\leftmargin}{#1}% \setlength{\rightmargin}{#2}%
+\setlength{\listparindent}{\parindent}%
+\setlength{\itemindent}{\parindent}%
+\setlength{\parsep}{\parskip}%
+}%
+\item[]}{\end{list}}
+
+\newcommand{\SExp}[2]{\mathcal{#1}\llbracket #2 \rrbracket}
+\newcommand{\AExp}[2]{\SExp{A}{#1}(#2)}
+\newcommand{\BExp}[2]{\SExp{B}{#1}(#2)}
+\newcommand{\AMIns}[1]{\textsc{#1}}
+\newcommand{\AMConf}[3]{\langle #1, #2, #3 \rangle}
+\newcommand{\AMArrow}{\: &\triangleright&\:\;}
+\newcommand{\sign}{\textbf{Sign}_{\bot}}
+\newcommand{\TT}{\textbf{TT}_{\bot}}
+\newcommand{\abs}[2]{\textbf{abs}_{\,#1_{\bot}} #2 }
+\begin{document}
+\title{Report for Lab Assignment 2, DD2457 Program Semantics and Analysis}
+\author{Erik Helin \& Oskar Arvidsson}
+\date{\today}
+\maketitle
+\section*{Operational semantics for AM}
+\begin{align*}
+&\AMConf{\AMIns{push-}n:c}{e}{s} \AMArrow 
+ \AMConf{c}{\abs{Z}{\SExp{N}{n}}:e}{s} \\
+&\AMConf{\AMIns{add}:c}{v_1:v_2:e}{s} \AMArrow
+ \AMConf{c}{v_1 +_{SE} v_2:e}{s}& \text{ if } v_1, v_2 \in \:& \sign \\
+&\AMConf{\AMIns{sub}:c}{v_1:v_2:e}{s} \AMArrow
+ \AMConf{c}{v_1 -_{SE} v_2:e}{s}& \text{ if } v_1, v_2 \in \:& \sign \\
+&\AMConf{\AMIns{mul}:c}{v_1:v_2:e}{s} \AMArrow
+ \AMConf{c}{v_1 \star_{SE} v_2:e}{s}& \text{ if } v_1, v_2 \in \:& \sign \\
+&\AMConf{\AMIns{div}:c}{v_1:v_2:e}{s} \AMArrow
+ \AMConf{c}{v_1 \: /_{SE}\: v_2:e}{s}& \text{ if } v_1, v_2 \in \:& \sign \\
+&\AMConf{\AMIns{true}:c}{e}{s} \AMArrow
+ \AMConf{c}{\abs{T}{\textbf{tt}}:e}{s}& \\
+&\AMConf{\AMIns{false}:c}{e}{s} \AMArrow
+ \AMConf{c}{\abs{T}{\textbf{ff}}:e}{s}& \\
+&\AMConf{\AMIns{eq}:c}{v_1:v_2:e}{s} \AMArrow
+ \AMConf{c}{v_1 =_{SE} v_2:e}{s}& \text{ if } v_1, v_2 \in \:& \sign \\
+&\AMConf{\AMIns{le}:c}{v_1:v_2:e}{s} \AMArrow
+ \AMConf{c}{v_1 \leq_{SE} v_2:e}{s}& \text{ if } v_1, v_2 \in \:& \sign \\
+&\AMConf{\AMIns{and}:c}{t_1:t_2:e}{s} \AMArrow
+ \AMConf{c}{t_1 \land_{SE} t_2:e}{s}& \text{ if } t_1, t_2 \in \:& \TT \\
+&\AMConf{\AMIns{neg}:c}{t_1:t_2:e}{s} \AMArrow
+ \AMConf{c}{t_1 \: \neg_{SE}\: t_2:e}{s}& \text{ if } t_1, t_2 \in \:& \TT \\
+&\AMConf{\AMIns{fetch-}x:c}{e}{s} \AMArrow 
+ \AMConf{c}{(s\;x):e}{s} \\
+&\AMConf{\AMIns{store-}x:c}{v:e}{s} \AMArrow
+ \begin{cases}
+    \AMConf{c}{e}{s[x \mapsto v]} & \text{ if } v \sqsubseteq_{SE} Z \\
+    \AMConf{c}{e}{\hat{s}} & \text{ if } ERR_A \sqsubseteq_{SE} v \\
+    \AMConf{c}{e}{s[x \mapsto v \underset{SE}{\sqcap} Z]} & 
+    \text{ if } Z \sqsubseteq_{SE} v \\
+ \end{cases}& \\
+&\AMConf{\AMIns{noop}:c}{e}{s} \AMArrow 
+ \AMConf{c}{e}{s} \\
+&\AMConf{\AMIns{branch}(c_1,c_2):c}{v:e}{s} \AMArrow
+ \begin{cases}
+    \AMConf{c_1:c}{e}{s} & \text{ if } TT \sqsubseteq_{TE} v \\
+    \AMConf{c_2:c}{e}{s} & \text{ if } FF \sqsubseteq_{TE} v \\
+    \AMConf{c}{e}{\hat{s}} & \text{ if } ERR_B \sqsubseteq_{TE} v \\
+ \end{cases}& \\
+&\AMConf{\AMIns{loop}(c_1,c_2):c}{e}{s} \AMArrow 
+ \AMConf{c_1:\AMIns{branch}(c_2:\AMIns{loop}(c_1, c_2), \AMIns{noop}):c}{e}{s}\\
+&\AMConf{\AMIns{try}(c_1, c_2):c}{e}{s} \AMArrow
+ \AMConf{c_1:\AMIns{catch}(c_2):c}{e}{s}& \\
+&\AMConf{\AMIns{catch}(c_1):c}{e}{s} \AMArrow
+ \AMConf{c}{e}{s}& \\
+&\AMConf{\AMIns{catch}(c_1):c}{e}{\hat{s}} \AMArrow
+ \AMConf{c_1:c}{e}{s}& \\
+&\AMConf{c_1:c}{e}{\hat{s}} \AMArrow \AMConf{c}{e}{\hat{s}}
+\end{align*}
+In the rule for \textsc{store}, \(\underset{SE}{\sqcap}\) means the greatest 
+lower bound in the \(\sign\) lattice.
+Note that, in the rule for \textsc{store}, if \(x\) equals \(Z\), the 
+configuration returned from the first and third case will be equivalent.
+Therefore the result becomes only one configuration. 
+
+\subsection*{Discussion}
+\end{document}
