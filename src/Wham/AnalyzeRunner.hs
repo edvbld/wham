@@ -31,14 +31,14 @@ run queue cps
 
 insert :: Configuration SignExc SignBoolExc -> ControlPointMap -> 
           Configuration SignExc SignBoolExc -> ControlPointMap
-insert ((STORE _ cp):_, _, _) m c = insertImpl cp m c
-insert ((BRANCH _ _ cp):_, _, _) m c = insertImpl cp m c
-insert ((TRY _ _ cp):_, _, _) m c = insertImpl cp m c
+insert c m ((STORE _ cp):_, _, _) = insertImpl cp c m
+insert c m ((BRANCH _ _ cp):_,_,_) = insertImpl cp c m
+insert c m ((TRY _ _ cp):_, _, _) = insertImpl cp c m
 insert _ m _ = m
 
-insertImpl :: Integer -> ControlPointMap -> Configuration SignExc SignBoolExc ->
+insertImpl :: Integer -> Configuration SignExc SignBoolExc -> ControlPointMap ->
               ControlPointMap
-insertImpl cp m c = case Map.lookup cp m of
+insertImpl cp c m = case Map.lookup cp m of
                      Nothing -> Map.insert cp (Set.singleton c) m
                      Just set -> Map.insert cp (Set.insert c set) m
 
@@ -59,7 +59,7 @@ update :: ConfigurationQueue -> Configuration SignExc SignBoolExc ->
 update q c cp' cps = 
     case mcp of
         Nothing -> q
-        Just cp -> case Map.lookup cp' cps of
+        Just cp -> case Map.lookup cp cps of
                     Just set -> case Set.member c set of
                                  True -> q
                                  False -> q' cp

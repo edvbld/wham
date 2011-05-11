@@ -21,9 +21,18 @@ pprintB (And b1 b2) = (pprintB b1) ++ " && " ++ (pprintB b2)
 pprintB (Equal a1 a2) = (pprintA a1) ++ " == " ++ (pprintA a2)
 pprintB (LessOrEqual a1 a2) = (pprintA a1) ++ " <= " ++ (pprintA a2)
 
+pprintState :: Maybe (State SignExc) -> String
+pprintState (Just s) = "{ " ++ str ++ "}"
+    where 
+        str = foldl (\acc (k,v) -> acc ++ k ++ " -> " ++ (show v) ++ " ") "" $ Map.toList s
+pprintState Nothing = "{}"
+
 pprint :: StatementCP -> (Map.Map Integer (State SignExc)) -> String
 pprint (SkipCP cp) cpm = "skip"
-pprint (AssignCP x a cp) cpm = x ++ " := " ++ (pprintA a)
+pprint (AssignCP x a cp) cpm = str2
+    where 
+        str = (pprintState $ Map.lookup cp cpm) ++ "\n"
+        str2 = str ++ x ++ " := " ++ (pprintA a)
 pprint (CompoundCP s1 s2) cpm = str
     where
         str = (pprint s1 cpm) ++ ";\n" ++ (pprint s2 cpm)
