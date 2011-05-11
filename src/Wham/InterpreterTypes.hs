@@ -8,10 +8,6 @@ data StateMode = Normal
                | Exception 
                deriving (Eq, Show, Ord)
 
-data AbstractMode = StateMode StateMode
-                  | Both
-                  deriving (Show)
-
 data StackElement a b = StackInteger a
                       | StackBool b
                       deriving (Show, Ord, Eq)

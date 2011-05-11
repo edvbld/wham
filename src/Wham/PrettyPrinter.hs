@@ -1,9 +1,8 @@
 module Wham.PrettyPrinter (showAnalyze) where
 
 import Wham.ControlPoint
-import Wham.InterpreterTypes
-import Wham.SignExc
 import Wham.AST
+import Wham.AnalyzerTypes
 import qualified Data.Map as Map
 
 pprintA :: ArithmeticExp -> String
@@ -21,43 +20,44 @@ pprintB (And b1 b2) = (pprintB b1) ++ " && " ++ (pprintB b2)
 pprintB (Equal a1 a2) = (pprintA a1) ++ " == " ++ (pprintA a2)
 pprintB (LessOrEqual a1 a2) = (pprintA a1) ++ " <= " ++ (pprintA a2)
 
-pprintState :: Maybe (State SignExc) -> String
-pprintState (Just s) = "{ " ++ str ++ "}"
+pprintState :: Maybe (Maybe AbstractStackElement, AbstractState, AbstractMode) 
+               -> String
+pprintState (Just (_,s,_)) = "{ " ++ str ++ "}"
     where 
         str = foldl (\acc (k,v) -> acc ++ k ++ " -> " ++ (show v) ++ ", ") "" $ Map.toList s
 pprintState Nothing = "{ unreachable }"
 
-pprint :: StatementCP -> (Map.Map Integer (State SignExc)) -> String
-pprint (SkipCP cp) cpm = (pprintState $ Map.lookup cp cpm) ++ "\nskip"
-pprint (AssignCP x a cp) cpm = str2
+pprint :: StatementCP -> AnalysisMap -> String
+pprint (SkipCP cp) am = (pprintState $ Map.lookup cp am) ++ "\nskip"
+pprint (AssignCP x a cp) am = str2
     where 
-        str = (pprintState $ Map.lookup cp cpm) ++ "\n"
+        str = (pprintState $ Map.lookup cp am) ++ "\n"
         str2 = str ++ x ++ " := " ++ (pprintA a)
-pprint (CompoundCP s1 s2) cpm = str
+pprint (CompoundCP s1 s2) am = str
     where
-        str = (pprint s1 cpm) ++ ";\n" ++ (pprint s2 cpm)
-pprint (IfCP b s1 s2 cp) cpm = str2
+        str = (pprint s1 am) ++ ";\n" ++ (pprint s2 am)
+pprint (IfCP b s1 s2 cp) am = str2
     where
-        str = (pprintState $ Map.lookup cp cpm) ++ "\n"
+        str = (pprintState $ Map.lookup cp am) ++ "\n"
         str2 = str ++ "if " ++ (pprintB b) ++ "\n" ++ (indent 1 "then") ++ "\n" 
-               ++ (indent 2 $ pprint s1 cpm) ++ "\n" ++ 
-              (indent 1 "else") ++ "\n" ++ (indent 2 $ pprint s2 cpm)
-pprint (WhileCP b body _ cp) cpm = str2
+               ++ (indent 2 $ pprint s1 am) ++ "\n" ++ 
+              (indent 1 "else") ++ "\n" ++ (indent 2 $ pprint s2 am)
+pprint (WhileCP b body _ cp) am = str2
     where
-        str = (pprintState $ Map.lookup cp cpm) ++ "\n"
+        str = (pprintState $ Map.lookup cp am) ++ "\n"
         str2 = str ++
-              "while " ++ (pprintB b) ++ " do\n" ++ (indent 1 $ pprint body cpm)
-pprint (TryCatchCP s1 s2 cp) cpm = str2
+              "while " ++ (pprintB b) ++ " do\n" ++ (indent 1 $ pprint body am)
+pprint (TryCatchCP s1 s2 cp) am = str2
     where
-        str = (pprintState $ Map.lookup cp cpm) ++ "\n"
-        str2 = str ++ "try\n" ++ (indent 1 $ pprint s1 cpm) ++ 
-              "\ncatch\n" ++ (indent 1 $ pprint s2 cpm)
+        str = (pprintState $ Map.lookup cp am) ++ "\n"
+        str2 = str ++ "try\n" ++ (indent 1 $ pprint s1 am) ++ 
+              "\ncatch\n" ++ (indent 1 $ pprint s2 am)
 
-showAnalyze :: StatementCP -> Map.Map Integer (State SignExc) -> String
-showAnalyze stm cpm = str2
-    where str = pprint stm cpm
-          lastCP = foldl max 0 $ Map.keys cpm
-          str2 = str ++ "\n" ++ (pprintState $ Map.lookup lastCP cpm)
+showAnalyze :: StatementCP -> AnalysisMap -> String
+showAnalyze stm am = str2
+    where str = pprint stm am
+          lastCP = foldl max 0 $ Map.keys am
+          str2 = str ++ "\n" ++ (pprintState $ Map.lookup lastCP am)
 
 indent :: Int -> (String -> String)
 indent i = 

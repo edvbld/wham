@@ -43,10 +43,9 @@ run fname content vars action = case parse parser fname content of
                                   Right (state, mode) -> 
                                      putStrLn $ 
                                         (show mode) ++ ": " ++ (show state)
-                        Analyze -> do print code
-                                      case analyze code vars of
-                                        Right res -> do mapM_ print $ Map.toList res
-                                                        {-putStrLn $ showAnalyze ast b-}
+                        Analyze -> do case analyze code vars of
+                                        Right res -> do putStrLn $ 
+                                                            showAnalyze ast res
                                         Left err -> print err
     Left err -> print err
 

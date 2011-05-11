@@ -5,16 +5,11 @@ import Wham.AMDefinitions hiding ((==))
 import Wham.SignExc
 import Wham.SignBoolExcType
 import Wham.InterpreterTypes
+import Wham.AnalyzerTypes
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 import Data.List (nub)
-import Debug.Trace
 
-type AbstractStack = Stack SignExc SignBoolExc
-type AbstractStackElement = StackElement SignExc SignBoolExc
-type AbstractState = State SignExc
-type AnalysisMap = 
-    Map.Map Integer (Maybe AbstractStackElement, AbstractState, AbstractMode)
 analyze :: [AMExpression] -> [(String, Integer)] -> 
            Either String AnalysisMap
 analyze code st = 
