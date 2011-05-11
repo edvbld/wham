@@ -19,7 +19,7 @@ analyze code st =
     where
         state' = map (\(s,i) -> (s, absInteger $ Just i)) st
         mcp = run (Map.singleton 0 [(code, [], toState state')]) 
-                  (Map.singleton 0 (Set.singleton ([], [], (Map.empty, Normal))))
+                   Map.empty 
         stateMap cpm = Map.map confToState cpm
         stackMap cpm = Map.map toStackElement cpm
         modeMap cpm = Map.map toMode cpm
