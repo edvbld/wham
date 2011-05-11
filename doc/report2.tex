@@ -103,5 +103,14 @@ Therefore the result becomes only one configuration. Also note that
   \subsection*{Examples}
     Below follows a number of results obtained from the analysis.
 
-\subsection*{Discussion}
+\section*{Discussion}
+  Alas, the analysis is not very good for all but very simple programs. For
+  example, in the program given below $x$ is clearly evaluated to $0$, but the
+  analysis will evaluate it to a non error value -- that is either positive,
+  negative or zero.
+
+  \[
+    x := 5-5
+  \]
+
 \end{document}
