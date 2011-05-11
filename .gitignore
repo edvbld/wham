@@ -1,4 +1,4 @@
 dist
-report.aux
-report.pdf
-report.log
+*.aux
+*.pdf
+*.log
