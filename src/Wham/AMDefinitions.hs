@@ -21,6 +21,7 @@ data AMExpression = PUSH Integer ControlPoint
                   | EQUAL ControlPoint
                   | LE ControlPoint
                   | AND ControlPoint
+                  | ANALYZE ControlPoint
                     deriving (Show, Ord, Eq)
 
 data Choice = Yes | No | Maybe

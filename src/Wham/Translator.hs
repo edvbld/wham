@@ -15,9 +15,9 @@ addCP (If b s1 s2) cp = (cp2, IfCP b stm1 stm2 cp)
     where
         (cp1, stm1) = addCP s1 $ cp + 1
         (cp2, stm2) = addCP s2 cp1
-addCP (While b s) cp = (cp1 + 1, WhileCP b stm cp)
+addCP (While b s) cp = (cp1 + 1, WhileCP b stm (cp + 1) cp)
     where
-        (cp1, stm) = addCP s $ cp + 1
+        (cp1, stm) = addCP s $ cp + 2
 addCP (TryCatch s1 s2) cp = (cp2, TryCatchCP stm1 stm2 cp)
     where
         (cp1, stm1) = addCP s1 $ cp + 1
@@ -69,7 +69,8 @@ translateStatement (CompoundCP s1 s2) = (translateStatement s1) ++
 translateStatement (IfCP b s1 s2 cp) = (translateBoolean b cp) ++
                                        [BRANCH (translateStatement s1) 
                                                (translateStatement s2) cp]
-translateStatement (WhileCP b s cp) = [LOOP (translateBoolean b cp) 
-                                            (translateStatement s) cp]
+translateStatement (WhileCP b s cp cp2) = (ANALYZE cp2):
+                                          [LOOP (translateBoolean b cp) 
+                                             (translateStatement s) cp]
 translateStatement (TryCatchCP s1 s2 cp) = [TRY (translateStatement s1)
                                                 (translateStatement s2) cp]

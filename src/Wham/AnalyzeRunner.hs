@@ -34,6 +34,7 @@ insert :: Configuration SignExc SignBoolExc -> ControlPointMap ->
 insert c m ((STORE _ cp):_, _, _) = insertImpl cp c m
 insert c m ((BRANCH _ _ cp):_,_,_) = insertImpl cp c m
 insert c m ((TRY _ _ cp):_, _, _) = insertImpl cp c m
+insert ((ANALYZE  cp):_, _, _) m c = insertImpl cp c m
 insert _ m _ = m
 
 insertImpl :: Integer -> Configuration SignExc SignBoolExc -> ControlPointMap ->
@@ -51,12 +52,11 @@ astep queue cps = case istep queue of
     Right (queue', set) -> Right (Set.toList set, increase queue' set)
     Left err -> Left err
     where 
-        cp' = cpToExec queue
-        increase q set = foldl (\acc c -> update acc c cp' cps) q $ Set.toList set
+        increase q set = foldl (\acc c -> update acc c cps) q $ Set.toList set
 
 update :: ConfigurationQueue -> Configuration SignExc SignBoolExc -> 
-          Integer -> ControlPointMap -> ConfigurationQueue
-update q c cp' cps = 
+          ControlPointMap -> ConfigurationQueue
+update q c cps = 
     case mcp of
         Nothing -> q
         Just cp -> case Map.lookup cp cps of
@@ -90,6 +90,7 @@ getCP ((NEG cp):_, _, _) = Just cp
 getCP ((EQUAL cp):_, _, _) = Just cp
 getCP ((LE cp):_, _, _) = Just cp
 getCP ((AND cp):_, _, _) = Just cp
+getCP ((ANALYZE cp):_, _, _) = Just cp
 
 cpToExec :: ConfigurationQueue -> Integer
 cpToExec q = cp

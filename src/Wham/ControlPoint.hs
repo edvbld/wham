@@ -7,7 +7,7 @@ data StatementCP = SkipCP ControlPoint
                  | AssignCP String ArithmeticExp ControlPoint
                  | CompoundCP StatementCP StatementCP 
                  | IfCP BooleanExp StatementCP StatementCP ControlPoint
-                 | WhileCP BooleanExp StatementCP ControlPoint
+                 | WhileCP BooleanExp StatementCP ControlPoint ControlPoint
                  | TryCatchCP StatementCP StatementCP ControlPoint
 
 

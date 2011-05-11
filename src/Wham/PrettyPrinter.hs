@@ -24,7 +24,7 @@ pprintB (LessOrEqual a1 a2) = (pprintA a1) ++ " <= " ++ (pprintA a2)
 pprintState :: Maybe (State SignExc) -> String
 pprintState (Just s) = "{ " ++ str ++ "}"
     where 
-        str = foldl (\acc (k,v) -> acc ++ k ++ " -> " ++ (show v) ++ " ") "" $ Map.toList s
+        str = foldl (\acc (k,v) -> acc ++ k ++ " -> " ++ (show v) ++ ", ") "" $ Map.toList s
 pprintState Nothing = "{}"
 
 pprint :: StatementCP -> (Map.Map Integer (State SignExc)) -> String
@@ -41,9 +41,11 @@ pprint (IfCP b s1 s2 cp) cpm = str
         str = "if " ++ (pprintB b) ++ "\n" ++ (indent 1 "then") ++ "\n" ++ 
               (indent 2 $ pprint s1 cpm) ++ "\n" ++ 
               (indent 1 "else") ++ "\n" ++ (indent 2 $ pprint s2 cpm)
-pprint (WhileCP b body cp) cpm = str
+pprint (WhileCP b body _ cp) cpm = str2
     where
-        str = "while " ++ (pprintB b) ++ " do\n" ++ (indent 1 $ pprint body cpm)
+        str = (pprintState $ Map.lookup cp cpm) ++ "\n"
+        str2 = str ++
+              "while " ++ (pprintB b) ++ " do\n" ++ (indent 1 $ pprint body cpm)
 pprint (TryCatchCP s1 s2 cp) cpm = str
     where
         str = "try\n" ++ (indent 1 $ pprint s1 cpm) ++ 

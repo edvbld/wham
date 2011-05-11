@@ -90,6 +90,7 @@ istep (CATCH _ _:exps) stack state@(_, Normal) =
     ret (exps, stack, state)
 istep (CATCH s _:exps) stack (state, Exception) =
     ret ((s ++ exps), stack, (state, Normal))
+istep (ANALYZE _:exps) stack state = ret (exps, stack, state)
 istep (_:exps) stack state@(_, Exception) =
     ret (exps, stack, state)
 istep exps stack state = Left $ "Encountered bad configuration: \n" ++
