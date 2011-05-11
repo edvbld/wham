@@ -37,6 +37,13 @@ printRHS (Just (Just ele, _, _)) = " rhs: " ++ (show ele) ++
 printRHS (Just (Nothing, _, _)) = " rhs: CORRUPT STACK!"
 printRHS Nothing = ""
 
+printCond :: Maybe (Maybe AbstractStackElement, AbstractState, AbstractMode) 
+               -> String
+printCond (Just (Just ele, _, _)) = " condition: " ++ (show ele) ++ 
+                                    (printPossibleException ele)
+printCond (Just (Nothing, _, _)) = " condition: CORRUPT STACK!"
+printCond Nothing = ""
+
 printPossibleException :: AbstractStackElement -> String
 printPossibleException (StackInteger AnyS) = " (Possible exception raiser!)"
 printPossibleException (StackInteger ErrorS) = " Raises exception!"
@@ -46,7 +53,7 @@ printPossibleException _ = ""
 
 printLast :: Maybe (Maybe AbstractStackElement, AbstractState, AbstractMode) ->
              String
-printLast c@(Just (_, s, mode)) = (pprintState c) ++ str
+printLast c@(Just (_, _, mode)) = (pprintState c) ++ str
     where
         str = case mode of
                 Both -> " possible exceptional termination"
@@ -67,13 +74,16 @@ pprint (CompoundCP s1 s2) am = str
         str = (pprint s1 am) ++ ";\n" ++ (pprint s2 am)
 pprint (IfCP b s1 s2 cp) am = str2
     where
-        str = (pprintState $ Map.lookup cp am) ++ "\n"
+        info = Map.lookup cp am
+        str = (pprintState info) ++ (printCond info) ++ "\n"
         str2 = str ++ "if " ++ (pprintB b) ++ "\n" ++ (indent 1 "then") ++ "\n" 
                ++ (indent 2 $ pprint s1 am) ++ "\n" ++ 
               (indent 1 "else") ++ "\n" ++ (indent 2 $ pprint s2 am)
-pprint (WhileCP b body _ cp) am = str2
+pprint (WhileCP b body cp2 cp) am = str2
     where
-        str = (pprintState $ Map.lookup cp am) ++ "\n"
+        info = Map.lookup cp am
+        info2 = Map.lookup cp2 am
+        str = (pprintState info) ++ (printCond info2) ++ "\n"
         str2 = str ++
               "while " ++ (pprintB b) ++ " do\n" ++ (indent 1 $ pprint body am)
 pprint (TryCatchCP s1 s2 cp) am = str2
