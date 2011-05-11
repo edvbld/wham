@@ -1,7 +1,11 @@
-module Wham.AnalyzeRunner(analyze) where
+module Wham.AnalyzeRunner(
+    run, 
+    ControlPointMap, 
+    ConfigurationSet) where
 
 import Wham.SignExc
 import Wham.SignBoolExc
+import Wham.InterpreterTypes
 import Wham.Interpreter
 import Wham.AMDefinitions hiding ((==), (+))
 import qualified Data.Set as Set
@@ -11,11 +15,6 @@ type ControlPointMap =
     Map.Map Integer (Set.Set (Configuration SignExc SignBoolExc))
 type ConfigurationSet = Set.Set (Configuration SignExc SignBoolExc)
 type ConfigurationQueue = Map.Map Integer [Configuration SignExc SignBoolExc]
-
-analyze :: [AMExpression] -> [(String, Integer)] -> 
-           Either String ControlPointMap
-analyze code st = run (Map.singleton 0 [(code, [], toState state')]) Map.empty
-    where state' = map (\(s,i) -> (s, absInteger $ Just i)) st
 
 run :: ConfigurationQueue -> ControlPointMap -> 
        Either String ControlPointMap

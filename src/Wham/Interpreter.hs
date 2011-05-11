@@ -11,18 +11,7 @@ import Prelude hiding ((+), (-), (*), (/), (<=), (==), (&&))
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 import Wham.AMDefinitions
-
-data StateMode = Normal 
-               | Exception 
-                 deriving (Eq, Show, Ord)
-
-data StackElement a b = StackInteger a
-                      | StackBool b
-                      deriving (Show, Ord, Eq)
-type Stack a b = [StackElement a b]
-type State a = Map.Map String a
-type Result a b = Either String (Set.Set (Configuration a b))
-type Configuration a b = ([AMExpression], Stack a b, (State a, StateMode))
+import Wham.InterpreterTypes
 
 step :: (AMNum a, AMBoolean b) => Configuration a b -> Result a b
 step (exps, stack, state) = istep exps stack state
@@ -113,6 +102,3 @@ update x n s =
     case Map.member x s of
         True -> Map.update (\_ -> Just n) x s
         False -> Map.insert x n s
-
-toState :: (AMNum a) => [(String, a)] -> (State a, StateMode)
-toState list = (Map.fromList list, Normal)
