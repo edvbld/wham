@@ -25,6 +25,7 @@ data AMExpression = PUSH Integer ControlPoint
                     deriving (Show, Ord, Eq)
 
 data Choice = Yes | No | Maybe
+
 class HasBottom a where
     isBottom :: a -> Choice
 

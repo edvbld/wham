@@ -11,34 +11,35 @@ import Wham.AMDefinitions hiding ((==), (+))
 import qualified Data.Set as Set
 import qualified Data.Map as Map
 
+type AbstractConfiguration = (Configuration SignExc SignBoolExc)
+type ConfigurationSet = Set.Set AbstractConfiguration
 type ControlPointMap = 
-    Map.Map Integer (Set.Set (Configuration SignExc SignBoolExc))
-type ConfigurationSet = Set.Set (Configuration SignExc SignBoolExc)
-type ConfigurationQueue = Map.Map Integer [Configuration SignExc SignBoolExc]
+    Map.Map Integer ConfigurationSet
+type ConfigurationQueue = Map.Map Integer [AbstractConfiguration]
 
 run :: ConfigurationQueue -> ControlPointMap -> 
        Either String ControlPointMap
-run queue cps 
-    | empty queue = Right cps
-    | otherwise = case astep queue cps of
-                     Right (confs, queue') -> run queue' (cps' confs)
+run queue cpm 
+    | empty queue = Right cpm
+    | otherwise = case astep queue cpm of
+                     Right (confs, queue') -> run queue' (cpm' confs)
                      Left err -> Left err
         where
             cp = cpToExec queue
             Just cs = Map.lookup cp queue
             c = head cs
-            cps' confs = foldl (insert c) cps confs
+            cpm' confs = foldl (insert c) cpm confs
 
-insert :: Configuration SignExc SignBoolExc -> ControlPointMap -> 
-          Configuration SignExc SignBoolExc -> ControlPointMap
-insert c m ((STORE _ cp):_, _, _) = insertImpl cp c m
-insert c m ((BRANCH _ _ cp):_,_,_) = insertImpl cp c m
-insert c m ((TRY _ _ cp):_, _, _) = insertImpl cp c m
+insert :: AbstractConfiguration -> ControlPointMap -> 
+          AbstractConfiguration -> ControlPointMap
+insert _ m c@((STORE _ cp):_, _, _) = insertImpl cp c m
+insert _ m c@((BRANCH _ _ cp):_,_,_) = insertImpl cp c m
+insert _ m c@((TRY _ _ cp):_, _, _) = insertImpl cp c m
 insert ((ANALYZE  cp):_, _, _) m c = insertImpl cp c m
-insert c m ((NOOP cp):_, _, _) = insertImpl cp c m 
+insert _ m c@((NOOP cp):_, _, _) = insertImpl cp c m 
 insert _ m _ = m
 
-insertImpl :: Integer -> Configuration SignExc SignBoolExc -> ControlPointMap ->
+insertImpl :: Integer -> AbstractConfiguration -> ControlPointMap ->
               ControlPointMap
 insertImpl cp c m = case Map.lookup cp m of
                      Nothing -> Map.insert cp (Set.singleton c) m
@@ -48,14 +49,14 @@ empty :: ConfigurationQueue -> Bool
 empty q = Map.null q
 
 astep :: ConfigurationQueue -> ControlPointMap ->
-         Either String ([Configuration SignExc SignBoolExc], ConfigurationQueue)
+         Either String ([AbstractConfiguration], ConfigurationQueue)
 astep queue cps = case istep queue of 
     Right (queue', set) -> Right (Set.toList set, increase queue' set)
     Left err -> Left err
     where 
         increase q set = foldl (\acc c -> update acc c cps) q $ Set.toList set
 
-update :: ConfigurationQueue -> Configuration SignExc SignBoolExc -> 
+update :: ConfigurationQueue -> AbstractConfiguration -> 
           ControlPointMap -> ConfigurationQueue
 update q c cps = 
     case mcp of
@@ -71,7 +72,7 @@ update q c cps =
             Just confs -> Map.insert cp (c:confs) q
             Nothing -> Map.insert cp [c] q
 
-getCP :: Configuration SignExc SignBoolExc -> Maybe Integer
+getCP :: AbstractConfiguration -> Maybe Integer
 getCP ([], _, _) = Nothing
 getCP ((PUSH _ cp):_, _, _) = Just cp
 getCP ((FETCH _ cp):_, _, _) = Just cp

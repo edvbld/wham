@@ -20,7 +20,6 @@ main = do args <- getArgs
                                        (\_ -> 
                                           error $ "Problem with file " ++ fname)
             (_, _, msgs) -> error $ concat msgs ++ usageInfo header options
-          where
 
 data Action = Run | Step | Analyze
 
@@ -47,7 +46,7 @@ run fname content vars action = case parse parser fname content of
                         Analyze -> do print code
                                       case analyze code vars of
                                         Right res -> do mapM_ print $ Map.toList res
-                                                        putStrLn $ showAnalyze ast res
+                                                        {-putStrLn $ showAnalyze ast b-}
                                         Left err -> print err
     Left err -> print err
 
