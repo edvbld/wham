@@ -82,7 +82,26 @@ In the rule for \textsc{store}, \(\underset{SE}{\sqcap}\) means the greatest
 lower bound in the \(\sign\) lattice.
 Note that, in the rule for \textsc{store}, if \(x\) equals \(Z\), the 
 configuration returned from the first and third case will be equivalent.
-Therefore the result becomes only one configuration. 
+Therefore the result becomes only one configuration. Also note that
+\textsc{store} and \textsc{branch} are the only nondeterministic rules.
+
+\section*{Analysis}
+  Under the right conditions the analysis is able to show a number of
+  interesting features of the analysed program, such as:
+
+  \begin{description}
+    \item[Variables values] Features of the variables values in the
+      configuration states throughout the program. E.g.\ a variable may always
+      be positive at a control point in the program.
+    \item[Exceptional states] Control points where an exception may occur.
+    \item[Unreachable code] Control points in the program that cannot be
+      reached in the given context.
+    \item[Unneeded try-catch constructs] For example if an exceptional state
+      impossibly can occur in a try block.
+  \end{description}
+
+  \subsection*{Examples}
+    Below follows a number of results obtained from the analysis.
 
 \subsection*{Discussion}
 \end{document}
