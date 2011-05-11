@@ -27,8 +27,10 @@ annotate :: Statement -> StatementCP
 annotate s = stm
     where (_, stm) = addCP s 0
 
-translate :: StatementCP -> [AMExpression]
-translate s = translateStatement s
+translate :: Statement -> [AMExpression]
+translate s = code ++ [ANALYZE cp] 
+    where (cp, stm) = addCP s 0
+          code = translateStatement stm
 
 translateArithmetic :: ArithmeticExp -> ControlPoint -> [AMExpression]
 translateArithmetic (Number n) cp = [(PUSH n cp)]

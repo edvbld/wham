@@ -36,7 +36,7 @@ eval _ _ _ = error $ usageInfo header options
 run :: String -> String -> [(String, Integer)] -> Action -> IO()
 run fname content vars action = case parse parser fname content of 
     Right stmt -> do let ast = annotate stmt
-                     let code = translate ast
+                     let code = translate stmt
                      case action of
                         Step -> debug code vars
                         Run  -> case evaluate code vars of
@@ -47,7 +47,7 @@ run fname content vars action = case parse parser fname content of
                         Analyze -> do print code
                                       case analyze code vars of
                                         Right res -> do mapM_ print $ Map.toList res
-                                                        putStrLn $ pprint ast res
+                                                        putStrLn $ showAnalyze ast res
                                         Left err -> print err
     Left err -> print err
 

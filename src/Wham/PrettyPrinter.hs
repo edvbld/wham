@@ -1,4 +1,4 @@
-module Wham.PrettyPrinter (pprint) where
+module Wham.PrettyPrinter (showAnalyze) where
 
 import Wham.ControlPoint
 import Wham.InterpreterTypes
@@ -25,10 +25,10 @@ pprintState :: Maybe (State SignExc) -> String
 pprintState (Just s) = "{ " ++ str ++ "}"
     where 
         str = foldl (\acc (k,v) -> acc ++ k ++ " -> " ++ (show v) ++ ", ") "" $ Map.toList s
-pprintState Nothing = "{}"
+pprintState Nothing = "{ unreachable }"
 
 pprint :: StatementCP -> (Map.Map Integer (State SignExc)) -> String
-pprint (SkipCP cp) cpm = "skip"
+pprint (SkipCP cp) cpm = (pprintState $ Map.lookup cp cpm) ++ "\nskip"
 pprint (AssignCP x a cp) cpm = str2
     where 
         str = (pprintState $ Map.lookup cp cpm) ++ "\n"
@@ -36,20 +36,28 @@ pprint (AssignCP x a cp) cpm = str2
 pprint (CompoundCP s1 s2) cpm = str
     where
         str = (pprint s1 cpm) ++ ";\n" ++ (pprint s2 cpm)
-pprint (IfCP b s1 s2 cp) cpm = str
+pprint (IfCP b s1 s2 cp) cpm = str2
     where
-        str = "if " ++ (pprintB b) ++ "\n" ++ (indent 1 "then") ++ "\n" ++ 
-              (indent 2 $ pprint s1 cpm) ++ "\n" ++ 
+        str = (pprintState $ Map.lookup cp cpm) ++ "\n"
+        str2 = str ++ "if " ++ (pprintB b) ++ "\n" ++ (indent 1 "then") ++ "\n" 
+               ++ (indent 2 $ pprint s1 cpm) ++ "\n" ++ 
               (indent 1 "else") ++ "\n" ++ (indent 2 $ pprint s2 cpm)
 pprint (WhileCP b body _ cp) cpm = str2
     where
         str = (pprintState $ Map.lookup cp cpm) ++ "\n"
         str2 = str ++
               "while " ++ (pprintB b) ++ " do\n" ++ (indent 1 $ pprint body cpm)
-pprint (TryCatchCP s1 s2 cp) cpm = str
+pprint (TryCatchCP s1 s2 cp) cpm = str2
     where
-        str = "try\n" ++ (indent 1 $ pprint s1 cpm) ++ 
+        str = (pprintState $ Map.lookup cp cpm) ++ "\n"
+        str2 = str ++ "try\n" ++ (indent 1 $ pprint s1 cpm) ++ 
               "\ncatch\n" ++ (indent 1 $ pprint s2 cpm)
+
+showAnalyze :: StatementCP -> Map.Map Integer (State SignExc) -> String
+showAnalyze stm cpm = str2
+    where str = pprint stm cpm
+          lastCP = foldl max 0 $ Map.keys cpm
+          str2 = str ++ "\n" ++ (pprintState $ Map.lookup lastCP cpm)
 
 indent :: Int -> (String -> String)
 indent i = 

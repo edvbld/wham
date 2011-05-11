@@ -35,6 +35,7 @@ insert c m ((STORE _ cp):_, _, _) = insertImpl cp c m
 insert c m ((BRANCH _ _ cp):_,_,_) = insertImpl cp c m
 insert c m ((TRY _ _ cp):_, _, _) = insertImpl cp c m
 insert ((ANALYZE  cp):_, _, _) m c = insertImpl cp c m
+insert c m ((NOOP cp):_, _, _) = insertImpl cp c m 
 insert _ m _ = m
 
 insertImpl :: Integer -> Configuration SignExc SignBoolExc -> ControlPointMap ->
