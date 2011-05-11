@@ -3,6 +3,9 @@ module Wham.PrettyPrinter (showAnalyze) where
 import Wham.ControlPoint
 import Wham.AST
 import Wham.AnalyzerTypes
+import Wham.InterpreterTypes
+import Wham.SignBoolExcType
+import Wham.SignExc
 import qualified Data.Map as Map
 
 pprintA :: ArithmeticExp -> String
@@ -27,11 +30,37 @@ pprintState (Just (_,s,_)) = "{ " ++ str ++ "}"
         str = foldl (\acc (k,v) -> acc ++ k ++ " -> " ++ (show v) ++ ", ") "" $ Map.toList s
 pprintState Nothing = "{ unreachable }"
 
+printRHS :: Maybe (Maybe AbstractStackElement, AbstractState, AbstractMode) 
+               -> String
+printRHS (Just (Just ele, _, _)) = " rhs: " ++ (show ele) ++ 
+                                    (printPossibleException ele)
+printRHS (Just (Nothing, _, _)) = " rhs: CORRUPT STACK!"
+printRHS Nothing = ""
+
+printPossibleException :: AbstractStackElement -> String
+printPossibleException (StackInteger AnyS) = " (Possible exception raiser!)"
+printPossibleException (StackInteger ErrorS) = " Raises exception!"
+printPossibleException (StackBool AnyT) = " (Possible exception raiser!)"
+printPossibleException (StackBool ErrorT) = " Raises exception!"
+printPossibleException _ = ""
+
+printLast :: Maybe (Maybe AbstractStackElement, AbstractState, AbstractMode) ->
+             String
+printLast c@(Just (_, s, mode)) = (pprintState c) ++ str
+    where
+        str = case mode of
+                Both -> " possible exceptional termination"
+                StateMode Exception -> " exceptional termination"
+                StateMode Normal -> " normal termination"
+printLast Nothing = "{ unreachable }"
+
+
 pprint :: StatementCP -> AnalysisMap -> String
 pprint (SkipCP cp) am = (pprintState $ Map.lookup cp am) ++ "\nskip"
 pprint (AssignCP x a cp) am = str2
     where 
-        str = (pprintState $ Map.lookup cp am) ++ "\n"
+        info = Map.lookup cp am
+        str = (pprintState info) ++ (printRHS info) ++ "\n"
         str2 = str ++ x ++ " := " ++ (pprintA a)
 pprint (CompoundCP s1 s2) am = str
     where
@@ -56,8 +85,7 @@ pprint (TryCatchCP s1 s2 cp) am = str2
 showAnalyze :: StatementCP -> AnalysisMap -> String
 showAnalyze stm am = str2
     where str = pprint stm am
-          lastCP = foldl max 0 $ Map.keys am
-          str2 = str ++ "\n" ++ (pprintState $ Map.lookup lastCP am)
+          str2 = str ++ "\n" ++ (printLast $ Map.lookup (-1) am)
 
 indent :: Int -> (String -> String)
 indent i = 

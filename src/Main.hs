@@ -3,7 +3,6 @@ module Main(main) where
 import System.Environment (getArgs)
 import Data.List (sort)
 import System.Console.GetOpt
-import qualified Data.Map as Map
 import Wham.Parser
 import Wham.Translator
 import Wham.Evaluator

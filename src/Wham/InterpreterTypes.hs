@@ -8,9 +8,13 @@ data StateMode = Normal
                | Exception 
                deriving (Eq, Show, Ord)
 
-data StackElement a b = StackInteger a
-                      | StackBool b
-                      deriving (Show, Ord, Eq)
+data (Show a, Show b) => StackElement a b = StackInteger a
+                                          | StackBool b
+                                          deriving (Ord, Eq)
+
+instance (Show a, Show b) => Show (StackElement a b) where
+    show (StackInteger a) = show a
+    show (StackBool b) = show b
 
 type Stack a b = [StackElement a b]
 type State a = Map.Map String a

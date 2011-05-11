@@ -64,7 +64,9 @@ confToState :: ConfigurationSet -> State SignExc
 confToState set = s
     where 
         n = map state $ filter normal $ Set.toList set
-        s = foldl ilub (head n) n
+        s = case n of 
+              [] -> Map.empty
+              list -> foldl ilub (head list) list
 
 ilub :: State SignExc -> State SignExc -> State SignExc
 ilub s1 s2 = Map.unionWith elub s1 s2
