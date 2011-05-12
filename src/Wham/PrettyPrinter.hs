@@ -34,6 +34,8 @@ printRHS :: Maybe (Maybe AbstractStackElement, AbstractState, AbstractMode)
                -> String
 printRHS (Just (Just ele, _, _)) = " rhs: " ++ (show ele) ++ 
                                     (printPossibleException ele)
+printRHS (Just (Nothing, _, StateMode Exception)) =
+    " rhs: not evaluated due to exception!"
 printRHS (Just (Nothing, _, _)) = " rhs: CORRUPT STACK!"
 printRHS Nothing = ""
 
@@ -41,6 +43,8 @@ printCond :: Maybe (Maybe AbstractStackElement, AbstractState, AbstractMode)
                -> String
 printCond (Just (Just ele, _, _)) = " condition: " ++ (show ele) ++ 
                                     (printPossibleException ele)
+printCond (Just (Nothing, _, StateMode Exception)) =
+    " condition: not evaluated due to exception!"
 printCond (Just (Nothing, _, _)) = " condition: CORRUPT STACK!"
 printCond Nothing = ""
 
