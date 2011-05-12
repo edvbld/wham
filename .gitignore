@@ -2,3 +2,4 @@ dist
 *.aux
 *.pdf
 *.log
+doc/analysis

@@ -2,6 +2,16 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{stmaryrd}
+\usepackage{listings}
+
+\lstset{
+  language = Java,
+  breaklines = true,
+  captionpos = b,
+  basicstyle = \footnotesize,
+  frame = leftline,
+  morekeywords = {skip,then},
+}
 
 \newenvironment{changemargin}[2]{%
 \begin{list}{}{%
@@ -98,10 +108,37 @@ Therefore the result becomes only one configuration. Also note that
       reached in the given context.
     \item[Unneeded try-catch constructs] For example if an exceptional state
       impossibly can occur in a try block.
+    \item[Termination] The analysis can tell if the program will terminate
+      normally if it terminates or if the termination may be exceptional. In
+      some cases the analysis is able to tell that the program won't terminate.
   \end{description}
 
   \subsection*{Examples}
     Below follows a number of results obtained from the analysis.
+
+    \subsubsection*{Infinite looping}
+      In listing \ref{lst:inf} the analysis is able to capture that the program
+      won't terminate. If the line $y := y - 1$ had been interchanged with $y
+      := y + 1$ though, the analysis wouldn't have catched this although the
+      program wouldn't have terminated in this case either.
+
+      \lstinputlisting[
+        caption={A non-terminating program},
+        label=lst:inf]{analysis/infinite.analysis}
+
+    \subsubsection*{Catch}
+      In listing \ref{lst:catch-1} the analysis comes to the result that the
+      catch block is unneeded. Correspondingly, in listing \ref{lst:catch-2}
+      the analysis discovers that the program will always go through the catch
+      block.
+
+      \lstinputlisting[
+        caption={A program with an unneeded catch block},
+        label=lst:catch-1]{analysis/unneeded_catch.analysis}
+
+      \lstinputlisting[
+        caption={A program where the catch block is always reached},
+        label=lst:catch-2]{analysis/always_catch.analysis}
 
 \section*{Discussion}
   Alas, the analysis is not very good for all but very simple programs. For

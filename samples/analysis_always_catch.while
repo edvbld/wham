@@ -1,0 +1,16 @@
+# This program will always result in an exception during the division in the
+# catch block.
+
+x := 1 ;
+i := 0 ;
+
+(while i <= 10 do
+    x := x * i ;
+    i := i + 1
+) ;
+
+try
+    y := 100 / x ;
+    y := y + 1
+catch
+    y := -1
