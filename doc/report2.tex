@@ -123,7 +123,7 @@ Therefore the result becomes only one configuration. Also note that
       program wouldn't have terminated in this case either.
 
       \lstinputlisting[
-        caption={A non-terminating program},
+        caption={Analysis of a non-terminating program},
         label=lst:inf]{analysis/infinite.analysis}
 
     \subsubsection*{Catch}
@@ -133,21 +133,53 @@ Therefore the result becomes only one configuration. Also note that
       block.
 
       \lstinputlisting[
-        caption={A program with an unneeded catch block},
+        caption={Analysis of a program with an unneeded catch block},
         label=lst:catch-1]{analysis/unneeded_catch.analysis}
 
       \lstinputlisting[
-        caption={A program where the catch block is always reached},
+        caption={Analysis of a program where the catch block is always reached},
         label=lst:catch-2]{analysis/always_catch.analysis}
 
 \section*{Discussion}
   Alas, the analysis is not very good for all but very simple programs. For
   example, in the program given below $x$ is clearly evaluated to $0$, but the
   analysis will evaluate it to a non error value -- that is either positive,
-  negative or zero.
+  negative or zero which is pretty much useless for further analysis.
 
   \[
     x := 5-5
   \]
+
+  A better analysis for example given above is pretty easy to incorporate in
+  the analyzer. For a better analysis it would be useful with more discrete
+  possible values. Many loops operate over quite small ranges of integer
+  values, e.g.\ $x \in [0,255]$. It would be quite easy to add more discrete
+  values to the analyzer although the analyzing process would take more time.
+
+  Another example of a feature that's missing in the analyzer is that simple
+  conditions that always hold are not captured. For example, in listing
+  \ref{lst:invariant}, $x > y$ always holds. Thus the else block will never be
+  executed, but the analyzer will not capture this.
+
+  \begin{lstlisting}[
+      caption={A program where $y > x$ always holds},
+      label=lst:invariant,
+      gobble=4
+    ]
+    x := 0 ;
+    y := 2 ;
+    i := 0 ;
+
+    (while i <= 10 do
+      x := x + 1 ;
+      y := y + 1 ;
+      i := i + 1
+    ) ;
+
+    if x <= y then
+      x := 0
+    else
+      x := 1
+  \end{lstlisting}
 
 \end{document}
