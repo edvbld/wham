@@ -28,7 +28,7 @@ annotate s = stm
     where (_, stm) = addCP s 0
 
 translate :: Statement -> [AMExpression]
-translate s = code ++ [ANALYZE (-1)] 
+translate s = (ANALYZE (-2)):code ++ [ANALYZE (-1)] 
     where (_, stm) = addCP s 0
           code = translateStatement stm
 
