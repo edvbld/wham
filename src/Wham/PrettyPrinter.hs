@@ -53,10 +53,10 @@ printCond (Just (Nothing, _, _)) = " condition: CORRUPT STACK!"
 printCond Nothing = ""
 
 printPossibleException :: AbstractStackElement -> String
-printPossibleException (StackInteger AnyS) = " (Possible exception raiser!)"
-printPossibleException (StackInteger ErrorS) = " Raises exception!"
-printPossibleException (StackBool AnyT) = " (Possible exception raiser!)"
-printPossibleException (StackBool ErrorT) = " Raises exception!"
+printPossibleException (StackInteger AnyS) = " WARNING: Possible exception raiser!"
+printPossibleException (StackInteger ErrorS) = " ERROR: Raises exception!"
+printPossibleException (StackBool AnyT) = " WARNING: Possible exception raiser!"
+printPossibleException (StackBool ErrorT) = " ERROR: Raises exception!"
 printPossibleException _ = ""
 
 printLast :: Maybe (Maybe AbstractStackElement, AbstractState, AbstractMode) ->
@@ -64,8 +64,8 @@ printLast :: Maybe (Maybe AbstractStackElement, AbstractState, AbstractMode) ->
 printLast c@(Just (_, _, mode)) = (showState c) ++ str
     where
         str = case mode of
-                Both -> " possible exceptional termination"
-                StateMode Exception -> " exceptional termination"
+                Both -> " WARNING: Possible exceptional termination"
+                StateMode Exception -> " ERROR: Exceptional termination"
                 StateMode Normal -> " normal termination"
 printLast Nothing = "{ unreachable }"
 
