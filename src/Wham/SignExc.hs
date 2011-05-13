@@ -14,7 +14,19 @@ data SignExc = Positive
              | ErrorS
              | AnyS
              | NoneS
-             deriving (Show, Ord, Eq)
+             deriving (Ord, Eq)
+
+instance Show SignExc where
+    show Positive    = "positive"
+    show Negative    = "negative"
+    show Zero        = "zero"
+    show NonNegative = "non-negative"
+    show NonPositive = "non-positive"
+    show NonZero     = "non-zero"
+    show NonErrorS   = "any number"
+    show ErrorS      = "error_s"
+    show AnyS        = "any_s"
+    show NoneS       = "none_s"
 
 add :: SignExc -> SignExc -> SignExc
 NoneS `add` _ = NoneS

@@ -23,19 +23,24 @@ pprintB (And b1 b2) = (pprintB b1) ++ " && " ++ (pprintB b2)
 pprintB (Equal a1 a2) = (pprintA a1) ++ " == " ++ (pprintA a2)
 pprintB (LessOrEqual a1 a2) = (pprintA a1) ++ " <= " ++ (pprintA a2)
 
-pprintState :: Maybe (Maybe AbstractStackElement, AbstractState, AbstractMode) 
-               -> String
-pprintState (Just (_,s,_)) = "{ " ++ str ++ "}"
+pprintState, showState :: Maybe 
+            (Maybe AbstractStackElement, AbstractState, AbstractMode) -> String
+pprintState (Just (_,_,StateMode Exception)) = "{ unreachable }"
+pprintState c = showState c
+
+showState (Just (_,s,_)) = "{ " ++ str2 ++ "}"
     where 
         str = foldl (\acc (k,v) -> acc ++ k ++ " -> " ++ (show v) ++ ", ") "" $ Map.toList s
-pprintState Nothing = "{ unreachable }"
+        str2 = if str == [] 
+                then [] 
+                else reverse (' ':((tail . tail . reverse) str))
+showState Nothing = "{ unreachable }"
 
 printRHS :: Maybe (Maybe AbstractStackElement, AbstractState, AbstractMode) 
                -> String
 printRHS (Just (Just ele, _, _)) = " rhs: " ++ (show ele) ++ 
                                     (printPossibleException ele)
-printRHS (Just (Nothing, _, StateMode Exception)) =
-    " rhs: not evaluated due to exception!"
+printRHS (Just (Nothing, _, StateMode Exception)) = ""
 printRHS (Just (Nothing, _, _)) = " rhs: CORRUPT STACK!"
 printRHS Nothing = ""
 
@@ -43,8 +48,7 @@ printCond :: Maybe (Maybe AbstractStackElement, AbstractState, AbstractMode)
                -> String
 printCond (Just (Just ele, _, _)) = " condition: " ++ (show ele) ++ 
                                     (printPossibleException ele)
-printCond (Just (Nothing, _, StateMode Exception)) =
-    " condition: not evaluated due to exception!"
+printCond (Just (Nothing, _, StateMode Exception)) = ""
 printCond (Just (Nothing, _, _)) = " condition: CORRUPT STACK!"
 printCond Nothing = ""
 
@@ -57,7 +61,7 @@ printPossibleException _ = ""
 
 printLast :: Maybe (Maybe AbstractStackElement, AbstractState, AbstractMode) ->
              String
-printLast c@(Just (_, _, mode)) = (pprintState c) ++ str
+printLast c@(Just (_, _, mode)) = (showState c) ++ str
     where
         str = case mode of
                 Both -> " possible exceptional termination"

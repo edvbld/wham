@@ -6,4 +6,12 @@ data SignBoolExc = NoneT
                  | NonErrorT
                  | ErrorT
                  | AnyT
-                 deriving (Show, Eq, Ord)
+                 deriving (Eq, Ord)
+
+instance Show SignBoolExc where
+    show NoneT = "none_t"
+    show FF = "false"
+    show TT = "true"
+    show NonErrorT = "true or false"
+    show ErrorT = "error_t"
+    show AnyT = "any_t"
